@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Phone, Mail, Menu, X, Building2, ChevronRight, User } from 'lucide-react';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
 export function Navbar() {
+  const { customer, openLoginModal } = useCustomerAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -93,17 +95,36 @@ export function Navbar() {
 
           {/* Action CTAs */}
           <div className="hidden sm:flex items-center space-x-3">
+            {customer ? (
+              <Link
+                to="/portal"
+                className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-[#004274] bg-blue-50/80 hover:bg-blue-100 border border-blue-200/60 rounded-md transition-colors"
+              >
+                <User className="w-3.5 h-3.5 text-[#004274]" />
+                <span>{customer.name?.split(' ')[0] || 'My Portal'}</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={openLoginModal}
+                className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 hover:text-[#004274] transition-colors"
+              >
+                <User className="w-3.5 h-3.5 text-slate-400" />
+                <span>Sign In</span>
+              </button>
+            )}
+
             <Link
               to="/contact"
-              className="inline-flex items-center px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#004274] border border-[#004274]/30 rounded-md hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#004274] border border-[#004274]/30 rounded-md hover:bg-slate-50 transition-colors"
             >
-              Book Valuation
+              Valuation
             </Link>
             <Link
               to="/properties"
-              className="inline-flex items-center px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white bg-[#004274] rounded-md hover:bg-[#00335a] shadow-sm transition-all"
+              className="inline-flex items-center px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-[#004274] rounded-md hover:bg-[#00335a] shadow-sm transition-all"
             >
-              <span>Explore Listings</span>
+              <span>Listings</span>
               <ChevronRight className="w-4 h-4 ml-1" />
             </Link>
           </div>

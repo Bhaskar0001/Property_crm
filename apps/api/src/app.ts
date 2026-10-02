@@ -21,6 +21,7 @@ import {
   mediaRouter,
   documentRouter,
   publicRouter,
+  customerRouter,
 } from './routes';
 import { authService } from './services/auth.service';
 import { initializeSocket } from './config/socket';
@@ -67,6 +68,7 @@ app.use('/api/v1/staff', staffRouter);
 app.use('/api/v1/audit', auditRouter);
 app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/public', publicRouter);
+app.use('/api/v1/customer', customerRouter);
 
 // 404 handler
 app.use((_req, res) => {

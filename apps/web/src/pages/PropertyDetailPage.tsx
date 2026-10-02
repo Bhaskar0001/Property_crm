@@ -17,20 +17,28 @@ import {
   AlertCircle,
   MessageSquare,
   X,
+  Heart,
 } from 'lucide-react';
 import { usePublicProperty } from '../hooks/usePublicData';
 import { formatCurrency } from '../../src/lib/utils';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { useFavorites, useToggleFavorite, useSubmitEnquiry } from '../hooks/useCustomerData';
 
 export function PropertyDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data, isLoading, error } = usePublicProperty(slug || '');
 
+  const { customer } = useCustomerAuth();
+  const { data: favorites = [] } = useFavorites();
+  const toggleFavorite = useToggleFavorite();
+  const submitEnquiry = useSubmitEnquiry();
+
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showViewingModal, setShowViewingModal] = useState(false);
   const [viewingForm, setViewingForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
+    name: customer?.name || '',
+    email: customer?.email || '',
+    phone: customer?.phone || '',
     preferredDate: '',
     preferredTime: 'morning',
     notes: '',
@@ -126,9 +134,34 @@ export function PropertyDetailPage() {
     }
   };
 
-  const handleViewingSubmit = (e: React.FormEvent) => {
+  const isFavorited = favorites.some((fav) => fav._id === property?._id);
+
+  const handleToggleFavorite = () => {
+    if (!property) return;
+    toggleFavorite.mutate({
+      propertyId: property._id,
+      isCurrentlyFavorited: isFavorited,
+    });
+  };
+
+  const handleViewingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setViewingSubmitted(true);
+    if (!property) return;
+    try {
+      await submitEnquiry.mutateAsync({
+        name: viewingForm.name,
+        email: viewingForm.email,
+        phone: viewingForm.phone,
+        propertyId: property._id,
+        type: 'viewing',
+        scheduledDate: viewingForm.preferredDate || undefined,
+        scheduledTime: viewingForm.preferredTime || undefined,
+        notes: viewingForm.notes || undefined,
+      });
+      setViewingSubmitted(true);
+    } catch (err) {
+      console.error('Failed to submit viewing:', err);
+    }
   };
 
   return (
@@ -194,6 +227,19 @@ export function PropertyDetailPage() {
                 : formatCurrency(property.price, currencyCode)}
             </span>
             <div className="flex items-center space-x-2 mt-2">
+              <button
+                type="button"
+                onClick={handleToggleFavorite}
+                className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                  isFavorited
+                    ? 'bg-rose-50 text-rose-600 border border-rose-200'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }`}
+              >
+                <Heart className={`w-3.5 h-3.5 ${isFavorited ? 'fill-current' : ''}`} />
+                <span>{isFavorited ? 'Saved' : 'Save'}</span>
+              </button>
+
               <button
                 onClick={handleShare}
                 className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md transition-colors"

@@ -1,18 +1,32 @@
 import { Link } from 'react-router-dom';
-import { Bed, Bath, Maximize2, MapPin, MessageSquare, Zap } from 'lucide-react';
+import { Bed, Bath, Maximize2, MapPin, MessageSquare, Zap, Heart } from 'lucide-react';
 import { PublicProperty } from '../../types';
 import { formatCurrency } from '../../lib/utils';
+import { useFavorites, useToggleFavorite } from '../../hooks/useCustomerData';
 
 interface PropertyCardProps {
   property: PublicProperty;
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
+  const { data: favorites = [] } = useFavorites();
+  const toggleFavorite = useToggleFavorite();
+  const isFavorited = favorites.some((fav) => fav._id === property._id);
+
   const fallbackImage =
     'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80';
 
   const coverUrl = property.coverImage || fallbackImage;
   const currencyCode = property.currency?.code || 'EUR';
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite.mutate({
+      propertyId: property._id,
+      isCurrentlyFavorited: isFavorited,
+    });
+  };
 
   // Format WhatsApp link
   const propertyUrl = `${window.location.origin}/properties/${property.slug}`;
@@ -34,7 +48,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        {/* Top Badges */}
+        {/* Top Left Badges */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
           {property.isFeatured && (
             <span className="bg-[#004274] text-white text-[11px] font-bold tracking-wider uppercase px-2.5 py-1 rounded shadow-sm">
@@ -48,7 +62,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
           )}
         </div>
 
-        {/* Status / BER Badge */}
+        {/* Top Right: BER / Status / Favorite */}
         <div className="absolute top-3 right-3 flex items-center space-x-1.5 z-10">
           {property.berRating && (
             <span className="inline-flex items-center space-x-1 bg-emerald-700 text-white text-[10px] font-black px-2 py-0.5 rounded shadow-sm">
@@ -64,6 +78,18 @@ export function PropertyCard({ property }: PropertyCardProps) {
               {property.status.name}
             </span>
           )}
+          <button
+            type="button"
+            onClick={handleFavoriteClick}
+            className={`p-1.5 rounded-full backdrop-blur-md shadow-md transition-all ${
+              isFavorited
+                ? 'bg-rose-500 text-white hover:bg-rose-600'
+                : 'bg-white/90 text-slate-600 hover:text-rose-500 hover:bg-white'
+            }`}
+            title={isFavorited ? 'Remove from favorites' : 'Save to favorites'}
+          >
+            <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
+          </button>
         </div>
 
         {/* Price Tag overlay */}
