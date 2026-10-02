@@ -24,6 +24,8 @@ import {
   customerRouter,
   leadRouter,
   telecallerRouter,
+  viewingRouter,
+  offerRouter,
 } from './routes';
 import { authService } from './services/auth.service';
 import { initializeSocket } from './config/socket';
@@ -73,6 +75,8 @@ app.use('/api/v1/public', publicRouter);
 app.use('/api/v1/customer', customerRouter);
 app.use('/api/v1/leads', leadRouter);
 app.use('/api/v1/telecaller', telecallerRouter);
+app.use('/api/v1/viewings', viewingRouter);
+app.use('/api/v1/offers', offerRouter);
 
 // 404 handler
 app.use((_req, res) => {

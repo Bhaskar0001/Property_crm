@@ -14,6 +14,10 @@ import { StaffDetailPage } from './pages/staff/StaffDetailPage';
 import { LeadListPage } from './pages/leads/LeadListPage';
 import { LeadDetailPage } from './pages/leads/LeadDetailPage';
 import { TelecallerWorkspacePage } from './pages/telecaller/TelecallerWorkspacePage';
+import { ViewingListPage } from './pages/viewings/ViewingListPage';
+import { ViewingCalendarPage } from './pages/viewings/ViewingCalendarPage';
+import { OfferListPage } from './pages/offers/OfferListPage';
+import { DealTrackingPage } from './pages/offers/DealTrackingPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +48,10 @@ function App() {
               <Route path="leads" element={<LeadListPage />} />
               <Route path="leads/:id" element={<LeadDetailPage />} />
               <Route path="telecaller" element={<TelecallerWorkspacePage />} />
+              <Route path="viewings" element={<ViewingListPage />} />
+              <Route path="viewings/calendar" element={<ViewingCalendarPage />} />
+              <Route path="offers" element={<OfferListPage />} />
+              <Route path="offers/deals" element={<DealTrackingPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="staff" element={<StaffListPage />} />
               <Route path="staff/:id" element={<StaffDetailPage />} />

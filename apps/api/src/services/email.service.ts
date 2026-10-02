@@ -105,6 +105,99 @@ export class EmailService {
       return true;
     }
   }
+
+  async sendViewingConfirmation(
+    recipientEmail: string,
+    details: {
+      customerName: string;
+      propertyTitle: string;
+      propertyAddress?: string;
+      scheduledDate: string;
+      scheduledTime: string;
+      agentName?: string;
+      agentPhone?: string;
+    }
+  ): Promise<boolean> {
+    const subject = `Confirmed: Viewing appointment for ${details.propertyTitle}`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; padding: 24px; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #004274; margin-top: 0;">Viewing Confirmed!</h2>
+        <p>Dear ${details.customerName},</p>
+        <p>Your property viewing has been confirmed by our advisory team. Details below:</p>
+        <div style="background: #f8fafc; padding: 16px; border-radius: 6px; margin: 16px 0;">
+          <p style="margin: 4px 0;"><strong>Property:</strong> ${details.propertyTitle}</p>
+          ${details.propertyAddress ? `<p style="margin: 4px 0;"><strong>Address:</strong> ${details.propertyAddress}</p>` : ''}
+          <p style="margin: 4px 0;"><strong>Date:</strong> ${details.scheduledDate}</p>
+          <p style="margin: 4px 0;"><strong>Time:</strong> ${details.scheduledTime}</p>
+          ${details.agentName ? `<p style="margin: 4px 0;"><strong>Assigned Advisor:</strong> ${details.agentName} ${details.agentPhone ? `(${details.agentPhone})` : ''}</p>` : ''}
+        </div>
+        <p style="color: #64748b; font-size: 13px;">If you need to reschedule or have questions, please reach out to your advisor.</p>
+      </div>
+    `;
+
+    if (this.resend) {
+      try {
+        await this.resend.emails.send({
+          from: config.resend.mailFrom,
+          to: [recipientEmail],
+          subject,
+          html,
+        });
+        return true;
+      } catch (err) {
+        logger.error({ err }, 'Error sending viewing confirmation email');
+        return false;
+      }
+    } else {
+      logger.info(`[DEV EMAIL] Viewing confirmation to ${recipientEmail} for ${details.propertyTitle}`);
+      return true;
+    }
+  }
+
+  async sendOfferStatusUpdate(
+    recipientEmail: string,
+    details: {
+      customerName: string;
+      propertyTitle: string;
+      amountFormatted: string;
+      status: string;
+      notes?: string;
+      counterAmountFormatted?: string;
+    }
+  ): Promise<boolean> {
+    const subject = `Update on your Offer for ${details.propertyTitle}: ${details.status.toUpperCase()}`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; padding: 24px; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #004274; margin-top: 0;">Offer Status Update</h2>
+        <p>Dear ${details.customerName},</p>
+        <p>There is an update regarding your offer on <strong>${details.propertyTitle}</strong>.</p>
+        <div style="background: #f8fafc; padding: 16px; border-radius: 6px; margin: 16px 0;">
+          <p style="margin: 4px 0;"><strong>Status:</strong> <span style="font-weight: 700; text-transform: uppercase;">${details.status}</span></p>
+          <p style="margin: 4px 0;"><strong>Offer Amount:</strong> ${details.amountFormatted}</p>
+          ${details.counterAmountFormatted ? `<p style="margin: 4px 0; color: #b45309;"><strong>Counter Offer:</strong> ${details.counterAmountFormatted}</p>` : ''}
+          ${details.notes ? `<p style="margin: 4px 0;"><strong>Notes from Vendor/Advisor:</strong> ${details.notes}</p>` : ''}
+        </div>
+      </div>
+    `;
+
+    if (this.resend) {
+      try {
+        await this.resend.emails.send({
+          from: config.resend.mailFrom,
+          to: [recipientEmail],
+          subject,
+          html,
+        });
+        return true;
+      } catch (err) {
+        logger.error({ err }, 'Error sending offer status email');
+        return false;
+      }
+    } else {
+      logger.info(`[DEV EMAIL] Offer update to ${recipientEmail} (${details.status})`);
+      return true;
+    }
+  }
 }
 
 export const emailService = new EmailService();

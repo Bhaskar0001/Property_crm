@@ -11,3 +11,5 @@ export { publicRouter } from './public';
 export { customerRouter } from './customer';
 export { leadRouter } from './lead';
 export { telecallerRouter } from './telecaller';
+export { viewingRouter } from './viewing';
+export { offerRouter } from './offer';
