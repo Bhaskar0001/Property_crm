@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Home, Users, MessageSquare, Calendar, Tag, UserCheck, BarChart, Settings, FileText, Menu, Bell, LogOut } from 'lucide-react';
+import { LayoutDashboard, Home, Users, MessageSquare, Calendar, Tag, UserCheck, BarChart, Settings, FileText, Menu, LogOut, PhoneCall } from 'lucide-react';
+import { NotificationBell } from '../components/notifications/NotificationBell';
 
 const NAV_ITEMS = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/properties', icon: Home, label: 'Properties' },
   { to: '/leads', icon: Users, label: 'Leads' },
+  { to: '/telecaller', icon: PhoneCall, label: 'Calling Desk' },
   { to: '/customers', icon: UserCheck, label: 'Customers' },
   { to: '/whatsapp', icon: MessageSquare, label: 'WhatsApp' },
   { to: '/viewings', icon: Calendar, label: 'Viewings' },
@@ -72,13 +74,12 @@ export function DashboardLayout() {
           </div>
           <div className="flex items-center space-x-4">
             <select className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-700 focus:outline-none">
-              <option>UAE</option>
+              <option>Global (All)</option>
+              <option>Ireland</option>
               <option>UK</option>
+              <option>UAE</option>
             </select>
-            <button className="relative text-gray-500 hover:text-gray-700">
-              <Bell className="h-6 w-6" />
-              <span className="absolute right-0 top-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
-            </button>
+            <NotificationBell />
             <div className="flex items-center space-x-2 border-l pl-4">
               <div className="flex flex-col text-right">
                 <span className="text-sm font-medium text-gray-900">{user?.email}</span>

@@ -10,3 +10,4 @@ export { documentRouter } from './document';
 export { publicRouter } from './public';
 export { customerRouter } from './customer';
 export { leadRouter } from './lead';
+export { telecallerRouter } from './telecaller';

@@ -13,6 +13,7 @@ import { StaffListPage } from './pages/staff/StaffListPage';
 import { StaffDetailPage } from './pages/staff/StaffDetailPage';
 import { LeadListPage } from './pages/leads/LeadListPage';
 import { LeadDetailPage } from './pages/leads/LeadDetailPage';
+import { TelecallerWorkspacePage } from './pages/telecaller/TelecallerWorkspacePage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ function App() {
               <Route path="properties/:id/media" element={<PropertyMediaPage />} />
               <Route path="leads" element={<LeadListPage />} />
               <Route path="leads/:id" element={<LeadDetailPage />} />
+              <Route path="telecaller" element={<TelecallerWorkspacePage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="staff" element={<StaffListPage />} />
               <Route path="staff/:id" element={<StaffDetailPage />} />
