@@ -9,7 +9,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     // Basic 401 handling - you could add token refresh logic here
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/me')) {
       if (!window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
