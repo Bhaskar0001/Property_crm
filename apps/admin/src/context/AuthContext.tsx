@@ -2,10 +2,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../lib/api';
 
 interface User {
-  id: string;
+  id?: string;
+  _id?: string;
+  name?: string;
   email: string;
   role: string;
-  needsPasswordChange: boolean;
+  mustChangePassword?: boolean;
+  needsPasswordChange?: boolean;
+  permissions?: string[];
 }
 
 interface AuthContextType {
@@ -27,7 +31,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkAuth = async () => {
       try {
         const { data } = await api.get('/auth/me');
-        setUser(data.user);
+        const userData = data?.data?.user || data?.user;
+        setUser(userData || null);
       } catch (err) {
         setUser(null);
       } finally {

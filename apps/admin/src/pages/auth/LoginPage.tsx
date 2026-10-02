@@ -23,9 +23,13 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      const { data } = await api.post('/auth/login', { email, password });
-      login(data.user);
-      navigate(data.user.needsPasswordChange ? '/force-change-password' : '/');
+      const res = await api.post('/auth/login', { email, password });
+      const userData = res.data?.data?.user || res.data?.user;
+      if (!userData) {
+        throw new Error('Login failed: user profile not found in response');
+      }
+      login(userData);
+      navigate(userData.mustChangePassword || userData.needsPasswordChange ? '/force-change-password' : '/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to log in');
     } finally {
