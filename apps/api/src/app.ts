@@ -26,6 +26,8 @@ import {
   telecallerRouter,
   viewingRouter,
   offerRouter,
+  whatsappRouter,
+  webhookRouter,
 } from './routes';
 import { authService } from './services/auth.service';
 import { initializeSocket } from './config/socket';
@@ -77,6 +79,8 @@ app.use('/api/v1/leads', leadRouter);
 app.use('/api/v1/telecaller', telecallerRouter);
 app.use('/api/v1/viewings', viewingRouter);
 app.use('/api/v1/offers', offerRouter);
+app.use('/api/v1/whatsapp', whatsappRouter);
+app.use('/api/v1/webhooks', webhookRouter);
 
 // 404 handler
 app.use((_req, res) => {

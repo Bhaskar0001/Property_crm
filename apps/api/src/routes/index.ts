@@ -13,3 +13,5 @@ export { leadRouter } from './lead';
 export { telecallerRouter } from './telecaller';
 export { viewingRouter } from './viewing';
 export { offerRouter } from './offer';
+export { whatsappRouter } from './whatsapp';
+export { webhookRouter } from './webhook';

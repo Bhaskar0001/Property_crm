@@ -18,6 +18,7 @@ import { ViewingListPage } from './pages/viewings/ViewingListPage';
 import { ViewingCalendarPage } from './pages/viewings/ViewingCalendarPage';
 import { OfferListPage } from './pages/offers/OfferListPage';
 import { DealTrackingPage } from './pages/offers/DealTrackingPage';
+import { WhatsAppWorkspacePage } from './pages/whatsapp/WhatsAppWorkspacePage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +49,7 @@ function App() {
               <Route path="leads" element={<LeadListPage />} />
               <Route path="leads/:id" element={<LeadDetailPage />} />
               <Route path="telecaller" element={<TelecallerWorkspacePage />} />
+              <Route path="whatsapp" element={<WhatsAppWorkspacePage />} />
               <Route path="viewings" element={<ViewingListPage />} />
               <Route path="viewings/calendar" element={<ViewingCalendarPage />} />
               <Route path="offers" element={<OfferListPage />} />
