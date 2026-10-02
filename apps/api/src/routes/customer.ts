@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { customerController } from '../controllers/customer.controller';
 import { authenticateCustomer, optionalCustomerAuth } from '../middlewares/customerAuth';
+import { authenticate } from '../middlewares/auth';
 
 const router = Router();
+
+// Staff Admin customer management endpoints
+router.get('/', authenticate, (req, res, next) => customerController.listAdmin(req, res, next));
+router.get('/detail/:id', authenticate, (req, res, next) => customerController.getAdminById(req, res, next));
 
 // Authentication endpoints
 router.post('/auth/send-otp', (req, res, next) => customerController.sendOtp(req, res, next));

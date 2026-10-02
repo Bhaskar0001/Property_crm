@@ -325,6 +325,80 @@ export class CustomerService {
       leadId: lead._id.toString(),
     };
   }
+
+  // Admin: List all registered customers with search, pagination, and lead count
+  async listAdmin(params: { page?: number; limit?: number; search?: string }) {
+    const page = Math.max(1, Number(params.page) || 1);
+    const limit = Math.max(1, Math.min(100, Number(params.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    const query: any = {};
+    if (params.search) {
+      const searchRegex = new RegExp(params.search.trim(), 'i');
+      query.$or = [{ name: searchRegex }, { email: searchRegex }, { phone: searchRegex }];
+    }
+
+    const [customers, total] = await Promise.all([
+      CustomerModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      CustomerModel.countDocuments(query),
+    ]);
+
+    const customerIds = customers.map((c) => c._id);
+    const [leads, viewings, favorites] = await Promise.all([
+      LeadModel.aggregate([
+        { $match: { customer: { $in: customerIds } } },
+        { $group: { _id: '$customer', count: { $sum: 1 } } },
+      ]),
+      ViewingModel.aggregate([
+        { $match: { customer: { $in: customerIds } } },
+        { $group: { _id: '$customer', count: { $sum: 1 } } },
+      ]),
+      FavoriteModel.aggregate([
+        { $match: { customer: { $in: customerIds } } },
+        { $group: { _id: '$customer', count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const leadCountMap = new Map(leads.map((l: any) => [l._id.toString(), l.count]));
+    const viewingCountMap = new Map(viewings.map((v: any) => [v._id.toString(), v.count]));
+    const favoriteCountMap = new Map(favorites.map((f: any) => [f._id.toString(), f.count]));
+
+    const enriched = customers.map((c: any) => ({
+      ...c,
+      totalLeads: leadCountMap.get(c._id.toString()) || 0,
+      totalViewings: viewingCountMap.get(c._id.toString()) || 0,
+      totalFavorites: favoriteCountMap.get(c._id.toString()) || 0,
+    }));
+
+    return {
+      customers: enriched,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  // Admin: Get customer 360 profile with all leads, viewings, and favorites
+  async getAdminById(id: string) {
+    const customer = await CustomerModel.findById(id).lean();
+    if (!customer) throw new NotFoundError('Customer not found');
+
+    const [leads, viewings, favorites] = await Promise.all([
+      LeadModel.find({ customer: id }).populate('property', 'title price slug address coverImage').sort({ createdAt: -1 }).lean(),
+      ViewingModel.find({ customer: id }).populate('property', 'title slug address coverImage').sort({ scheduledDate: -1 }).lean(),
+      FavoriteModel.find({ customer: id }).populate('property', 'title price slug address coverImage').lean(),
+    ]);
+
+    return {
+      customer,
+      leads,
+      viewings,
+      favorites,
+    };
+  }
 }
 
 export const customerService = new CustomerService();

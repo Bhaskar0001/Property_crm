@@ -20,6 +20,8 @@ import { OfferListPage } from './pages/offers/OfferListPage';
 import { DealTrackingPage } from './pages/offers/DealTrackingPage';
 import { WhatsAppWorkspacePage } from './pages/whatsapp/WhatsAppWorkspacePage';
 import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
+import { CustomerListPage } from './pages/customers/CustomerListPage';
+import { AuditLogsPage } from './pages/audit/AuditLogsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,6 +52,7 @@ function App() {
               <Route path="leads" element={<LeadListPage />} />
               <Route path="leads/:id" element={<LeadDetailPage />} />
               <Route path="telecaller" element={<TelecallerWorkspacePage />} />
+              <Route path="customers" element={<CustomerListPage />} />
               <Route path="whatsapp" element={<WhatsAppWorkspacePage />} />
               <Route path="viewings" element={<ViewingListPage />} />
               <Route path="viewings/calendar" element={<ViewingCalendarPage />} />
@@ -59,6 +62,7 @@ function App() {
               <Route path="settings" element={<SettingsPage />} />
               <Route path="staff" element={<StaffListPage />} />
               <Route path="staff/:id" element={<StaffDetailPage />} />
+              <Route path="audit-logs" element={<AuditLogsPage />} />
             </Route>
 
             {/* Fallback */}

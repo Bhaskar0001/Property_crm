@@ -77,6 +77,7 @@ app.use('/api/v1/audit', auditRouter);
 app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/public', publicRouter);
 app.use('/api/v1/customer', customerRouter);
+app.use('/api/v1/customers', customerRouter);
 app.use('/api/v1/leads', leadRouter);
 app.use('/api/v1/telecaller', telecallerRouter);
 app.use('/api/v1/viewings', viewingRouter);

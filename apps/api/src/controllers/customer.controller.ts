@@ -151,6 +151,29 @@ export class CustomerController {
       next(error);
     }
   }
+
+  // Admin: List customers
+  async listAdmin(req: any, res: Response, next: NextFunction) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const search = req.query.search as string;
+      const result = await customerService.listAdmin({ page, limit, search });
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Admin: Get customer detail
+  async getAdminById(req: any, res: Response, next: NextFunction) {
+    try {
+      const result = await customerService.getAdminById(req.params.id);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const customerController = new CustomerController();
