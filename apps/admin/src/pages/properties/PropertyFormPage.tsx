@@ -10,7 +10,8 @@ import {
   usePropertyFeatures,
   useCurrencies,
 } from '../../hooks/useAdminConfig';
-import { ArrowLeft, Check, Save } from 'lucide-react';
+import { useGeneratePropertyDescription } from '../../hooks/useAI';
+import { ArrowLeft, Check, Save, Sparkles } from 'lucide-react';
 
 const STEPS = [
   'Identity & Location',
@@ -38,6 +39,7 @@ export function PropertyFormPage() {
 
   const createMutation = useCreateProperty();
   const updateMutation = useUpdateProperty();
+  const generateDescMutation = useGeneratePropertyDescription();
 
   // Form State
   const [formData, setFormData] = useState<any>({
@@ -658,7 +660,44 @@ export function PropertyFormPage() {
         {/* Step 5: Description & SEO */}
         {currentStep === 4 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Description & SEO Metadata</h3>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Description & SEO Metadata</h3>
+                <p className="text-xs text-gray-500">Draft or generate compelling property copy.</p>
+              </div>
+              <button
+                type="button"
+                disabled={generateDescMutation.isPending}
+                onClick={() => {
+                  if (!formData.title || !formData.city) {
+                    alert('Please enter at least a Property Title and City in Step 1 first.');
+                    return;
+                  }
+                  generateDescMutation.mutate(
+                    {
+                      title: formData.title,
+                      city: formData.city,
+                      area: formData.area,
+                      price: formData.price ? Number(formData.price) : undefined,
+                      bedrooms: formData.bedrooms ? Number(formData.bedrooms) : undefined,
+                      bathrooms: formData.bathrooms ? Number(formData.bathrooms) : undefined,
+                      livingArea: formData.livingArea ? Number(formData.livingArea) : undefined,
+                      berRating: formData.berRating,
+                    },
+                    {
+                      onSuccess: (data) => {
+                        handleChange('shortDescription', data.shortDescription);
+                        handleChange('description', data.description);
+                      },
+                    }
+                  );
+                }}
+                className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-primary to-blue-600 hover:from-primary-dark hover:to-blue-700 text-white rounded-md text-xs font-semibold shadow-xs disabled:opacity-50 transition"
+              >
+                <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-300" />
+                {generateDescMutation.isPending ? 'Generating Copy...' : 'Generate with AI'}
+              </button>
+            </div>
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">Short Summary (Featured Snippet)</label>
               <textarea

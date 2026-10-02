@@ -29,6 +29,7 @@ import {
   whatsappRouter,
   webhookRouter,
   analyticsRouter,
+  aiRouter,
 } from './routes';
 import { authService } from './services/auth.service';
 import { initializeSocket } from './config/socket';
@@ -83,6 +84,7 @@ app.use('/api/v1/offers', offerRouter);
 app.use('/api/v1/whatsapp', whatsappRouter);
 app.use('/api/v1/webhooks', webhookRouter);
 app.use('/api/v1/analytics', analyticsRouter);
+app.use('/api/v1/ai', aiRouter);
 
 // 404 handler
 app.use((_req, res) => {
