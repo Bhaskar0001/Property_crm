@@ -15,3 +15,4 @@ export { viewingRouter } from './viewing';
 export { offerRouter } from './offer';
 export { whatsappRouter } from './whatsapp';
 export { webhookRouter } from './webhook';
+export { analyticsRouter } from './analytics';

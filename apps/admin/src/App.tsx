@@ -19,6 +19,7 @@ import { ViewingCalendarPage } from './pages/viewings/ViewingCalendarPage';
 import { OfferListPage } from './pages/offers/OfferListPage';
 import { DealTrackingPage } from './pages/offers/DealTrackingPage';
 import { WhatsAppWorkspacePage } from './pages/whatsapp/WhatsAppWorkspacePage';
+import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,6 +55,7 @@ function App() {
               <Route path="viewings/calendar" element={<ViewingCalendarPage />} />
               <Route path="offers" element={<OfferListPage />} />
               <Route path="offers/deals" element={<DealTrackingPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="staff" element={<StaffListPage />} />
               <Route path="staff/:id" element={<StaffDetailPage />} />
