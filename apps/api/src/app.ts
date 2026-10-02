@@ -20,6 +20,7 @@ import {
   propertyRouter,
   mediaRouter,
   documentRouter,
+  publicRouter,
 } from './routes';
 import { authService } from './services/auth.service';
 import { initializeSocket } from './config/socket';
@@ -65,6 +66,7 @@ app.use('/api/v1/documents', documentRouter);
 app.use('/api/v1/staff', staffRouter);
 app.use('/api/v1/audit', auditRouter);
 app.use('/api/v1/notifications', notificationRouter);
+app.use('/api/v1/public', publicRouter);
 
 // 404 handler
 app.use((_req, res) => {

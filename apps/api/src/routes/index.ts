@@ -7,3 +7,4 @@ export { adminConfigRouter } from './adminConfig';
 export { propertyRouter } from './property';
 export { mediaRouter } from './media';
 export { documentRouter } from './document';
+export { publicRouter } from './public';
