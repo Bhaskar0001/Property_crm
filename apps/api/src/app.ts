@@ -22,6 +22,7 @@ import {
   documentRouter,
   publicRouter,
   customerRouter,
+  leadRouter,
 } from './routes';
 import { authService } from './services/auth.service';
 import { initializeSocket } from './config/socket';
@@ -69,6 +70,7 @@ app.use('/api/v1/audit', auditRouter);
 app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/public', publicRouter);
 app.use('/api/v1/customer', customerRouter);
+app.use('/api/v1/leads', leadRouter);
 
 // 404 handler
 app.use((_req, res) => {
