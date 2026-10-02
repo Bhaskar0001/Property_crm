@@ -10,7 +10,17 @@ import { connectDatabase } from './config/database';
 import { connectRedis } from './config/redis';
 import { errorHandler } from './middlewares/errorHandler';
 import { logger } from './utils/logger';
-import { healthRouter, authRouter, staffRouter, auditRouter, notificationRouter, adminConfigRouter } from './routes';
+import {
+  healthRouter,
+  authRouter,
+  staffRouter,
+  auditRouter,
+  notificationRouter,
+  adminConfigRouter,
+  propertyRouter,
+  mediaRouter,
+  documentRouter,
+} from './routes';
 import { authService } from './services/auth.service';
 import { initializeSocket } from './config/socket';
 import { initializeQueues, closeAllQueues } from './config/queue';
@@ -49,6 +59,9 @@ if (config.env !== 'production') {
 app.use('/api/v1/health', healthRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/admin', adminConfigRouter);
+app.use('/api/v1/properties', propertyRouter);
+app.use('/api/v1/media', mediaRouter);
+app.use('/api/v1/documents', documentRouter);
 app.use('/api/v1/staff', staffRouter);
 app.use('/api/v1/audit', auditRouter);
 app.use('/api/v1/notifications', notificationRouter);

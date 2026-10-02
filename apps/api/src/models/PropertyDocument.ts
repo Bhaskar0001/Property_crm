@@ -8,7 +8,7 @@ const schema = new Schema<IPropertyDocument>({
   fileName: { type: String },
   fileSize: { type: Number },
   mimeType: { type: String },
-  visibility: { type: String, enum: ['public', 'private', 'staff'] },
+  visibility: { type: String, enum: ['public', 'internal', 'admin_only'] },
   version: { type: String },
   expiryDate: { type: Date },
   uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' }

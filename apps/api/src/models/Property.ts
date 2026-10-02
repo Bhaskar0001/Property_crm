@@ -5,12 +5,15 @@ export interface IProperty extends Document {
   listingType: mongoose.Types.ObjectId; tenureType: mongoose.Types.ObjectId;
   status: mongoose.Types.ObjectId; currency: mongoose.Types.ObjectId;
   price: number; features: mongoose.Types.ObjectId[]; isPublished: boolean;
+  imageCount: number; coverImage: string;
   createdBy: mongoose.Types.ObjectId; updatedBy: mongoose.Types.ObjectId;
 }
 const schema = new Schema<IProperty>({
   title: { type: String, required: true },
   slug: { type: String, required: true, unique: true },
   description: { type: String },
+  coverImage: { type: String },
+  imageCount: { type: Number, default: 0 },
   country: { type: Schema.Types.ObjectId, ref: 'Country' },
   propertyType: { type: Schema.Types.ObjectId, ref: 'PropertyType' },
   listingType: { type: Schema.Types.ObjectId, ref: 'ListingType' },

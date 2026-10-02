@@ -4,3 +4,6 @@ export { staffRouter } from './staff';
 export { auditRouter } from './audit';
 export { notificationRouter } from './notification';
 export { adminConfigRouter } from './adminConfig';
+export { propertyRouter } from './property';
+export { mediaRouter } from './media';
+export { documentRouter } from './document';
