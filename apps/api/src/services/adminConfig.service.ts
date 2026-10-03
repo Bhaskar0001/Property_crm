@@ -31,6 +31,15 @@ export class AdminConfigService {
   }
 
   async create(data: any) {
+    if (!data.slug && data.name) {
+      data.slug = data.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    }
+    if (!data.code && data.name) {
+      data.code = data.name.toUpperCase().trim().replace(/[^A-Z0-9]+/g, '_').replace(/(^_|_$)+/g, '');
+    }
+    if (data.currency === '' || (typeof data.currency === 'string' && data.currency.length !== 24)) {
+      delete data.currency;
+    }
     return this.model.create(data);
   }
 

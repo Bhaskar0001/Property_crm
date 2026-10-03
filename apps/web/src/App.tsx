@@ -8,6 +8,8 @@ import { PropertyListingPage } from './pages/PropertyListingPage';
 import { PropertyDetailPage } from './pages/PropertyDetailPage';
 import { ContactPage } from './pages/ContactPage';
 import { CustomerPortalPage } from './pages/CustomerPortalPage';
+import { ServicesPage } from './pages/ServicesPage';
+import { LegalPage } from './pages/LegalPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +31,10 @@ export function App() {
               <Route index element={<HomePage />} />
               <Route path="properties" element={<PropertyListingPage />} />
               <Route path="properties/:slug" element={<PropertyDetailPage />} />
+              <Route path="services" element={<ServicesPage />} />
+              <Route path="privacy" element={<LegalPage />} />
+              <Route path="terms" element={<LegalPage />} />
+              <Route path="regulatory" element={<LegalPage />} />
               <Route path="portal" element={<CustomerPortalPage />} />
               <Route path="contact" element={<ContactPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

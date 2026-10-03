@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../lib/api';
 import {
@@ -155,8 +155,8 @@ export function AuditLogsPage() {
                   const isExpanded = expandedLogId === log._id;
 
                   return (
-                    <>
-                      <tr key={log._id} className="hover:bg-gray-50/80 transition">
+                    <Fragment key={log._id}>
+                      <tr className="hover:bg-gray-50/80 transition">
                         <td className="py-3 px-4 whitespace-nowrap text-gray-600">
                           {new Date(log.createdAt).toLocaleString()}
                         </td>
@@ -220,7 +220,7 @@ export function AuditLogsPage() {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </tbody>

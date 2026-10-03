@@ -25,10 +25,11 @@ export function LoginPage() {
     try {
       const res = await api.post('/auth/login', { email, password });
       const userData = res.data?.data?.user || res.data?.user;
+      const accessToken = res.data?.data?.accessToken || res.data?.accessToken;
       if (!userData) {
         throw new Error('Login failed: user profile not found in response');
       }
-      login(userData);
+      login(userData, accessToken);
       navigate(userData.mustChangePassword || userData.needsPasswordChange ? '/force-change-password' : '/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to log in');

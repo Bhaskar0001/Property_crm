@@ -8,12 +8,13 @@ export const staffService = {
       throw new Error('Email already in use');
     }
 
-    const passwordHash = await argon2.hash(data.password);
+    const rawPassword = data.password || 'StaffPass123!';
+    const passwordHash = await argon2.hash(rawPassword);
     const user = await UserModel.create({
       ...data,
       passwordHash,
-      role: 'staff',
-      isActive: true,
+      role: data.role || 'staff',
+      isActive: data.isActive !== undefined ? data.isActive : true,
     });
 
     const userObj = user.toObject();

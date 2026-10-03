@@ -80,7 +80,7 @@ export function useNotificationSocket() {
       socket = io('/', {
         path: '/socket.io',
         withCredentials: true,
-        transports: ['websocket', 'polling'],
+        transports: ['polling', 'websocket'],
       });
 
       socket.on('connect', () => {

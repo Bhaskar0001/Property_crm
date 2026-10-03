@@ -61,7 +61,7 @@ class AuthController {
 
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user.userId;
+      const userId = (req as any).user?._id || (req as any).user?.userId;
       await authService.logout(userId);
 
       res.clearCookie('access_token');
@@ -75,7 +75,7 @@ class AuthController {
 
   getMe = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user.userId;
+      const userId = (req as any).user?._id || (req as any).user?.userId;
       const user = await authService.getProfile(userId);
       sendSuccess(res, { user });
     } catch (error) {
@@ -85,7 +85,7 @@ class AuthController {
 
   changePassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user.userId;
+      const userId = (req as any).user?._id || (req as any).user?.userId;
       const { currentPassword, newPassword } = req.body;
 
       await authService.changePassword(userId, currentPassword, newPassword);

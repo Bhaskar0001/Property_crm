@@ -13,7 +13,15 @@ export const CountryManager: React.FC = () => {
         <div>
             <div className="flex justify-between mb-4">
                 <h2 className="text-xl font-semibold">Country Manager</h2>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded" onClick={() => create.mutate({ name: 'New Country', isoCode: 'XX', currencyId: 1, isActive: true })}>Add Country</button>
+                <button 
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" 
+                    onClick={() => {
+                        const code = 'C' + Math.floor(Math.random() * 90 + 10);
+                        create.mutate({ name: `Country ${code}`, isoCode: code, isActive: true });
+                    }}
+                >
+                    Add Country
+                </button>
             </div>
             <table className="w-full text-left border-collapse">
                 <thead>
@@ -25,18 +33,21 @@ export const CountryManager: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {(countries || []).map((c: any) => (
-                        <tr key={c.id} className="border-b">
-                            <td className="py-2">{c.name}</td>
-                            <td><span className="bg-gray-200 px-2 py-1 rounded text-sm">{c.isoCode}</span></td>
-                            <td>
-                                <input type="checkbox" checked={c.isActive} onChange={() => update.mutate({ id: c.id, data: { ...c, isActive: !c.isActive } })} />
-                            </td>
-                            <td>
-                                <button className="text-red-600" onClick={() => remove.mutate(c.id)}>Delete</button>
-                            </td>
-                        </tr>
-                    ))}
+                    {(countries || []).map((c: any, idx: number) => {
+                        const id = c._id || c.id || `c-${idx}`;
+                        return (
+                            <tr key={id} className="border-b">
+                                <td className="py-2">{c.name}</td>
+                                <td><span className="bg-gray-200 px-2 py-1 rounded text-sm">{c.isoCode}</span></td>
+                                <td>
+                                    <input type="checkbox" checked={!!c.isActive} onChange={() => update.mutate({ id: c._id || c.id, data: { isActive: !c.isActive } })} />
+                                </td>
+                                <td>
+                                    <button className="text-red-600 hover:underline" onClick={() => remove.mutate(c._id || c.id)}>Delete</button>
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

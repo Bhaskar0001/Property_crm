@@ -71,7 +71,7 @@ export function useWhatsAppConversations() {
       socket = io('/', {
         path: '/socket.io',
         withCredentials: true,
-        transports: ['websocket', 'polling'],
+        transports: ['polling', 'websocket'],
       });
 
       const handleNewMessage = (payload: { conversationId: string; message: WhatsAppMessage }) => {

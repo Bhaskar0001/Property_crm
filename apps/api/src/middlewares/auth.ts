@@ -7,6 +7,7 @@ import { UserModel } from '../models/User';
 export interface AuthRequest extends Request {
   user?: {
     _id: string;
+    userId: string;
     email: string;
     name: string;
     role: string;
@@ -48,6 +49,7 @@ export const authenticate = async (
 
     req.user = {
       _id: user._id.toString(),
+      userId: user._id.toString(),
       email: user.email,
       name: user.name,
       role: user.role,

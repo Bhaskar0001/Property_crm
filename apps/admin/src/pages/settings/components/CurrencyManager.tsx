@@ -14,7 +14,15 @@ export const CurrencyManager: React.FC = () => {
         <div>
             <div className="flex justify-between mb-4">
                 <h2 className="text-xl font-semibold">Currency Manager</h2>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded" onClick={() => create.mutate({ code: 'XXX', symbol: 'X', isActive: true, isDefault: false })}>Add Currency</button>
+                <button 
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" 
+                    onClick={() => {
+                        const code = 'C' + Math.floor(Math.random() * 90 + 10);
+                        create.mutate({ code, name: `Currency ${code}`, symbol: '$', isActive: true, isDefault: false });
+                    }}
+                >
+                    Add Currency
+                </button>
             </div>
             <table className="w-full text-left border-collapse">
                 <thead>
@@ -27,21 +35,24 @@ export const CurrencyManager: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {(currencies || []).map((c: any) => (
-                        <tr key={c.id} className="border-b">
-                            <td className="py-2">{c.code}</td>
-                            <td><span className="bg-gray-200 px-2 py-1 rounded text-sm">{c.symbol}</span></td>
-                            <td>
-                                {c.isDefault ? <span className="text-green-600 font-bold">Yes</span> : <button className="text-blue-600" onClick={() => setDefault.mutate(c.id)}>Set Default</button>}
-                            </td>
-                            <td>
-                                <input type="checkbox" checked={c.isActive} onChange={() => update.mutate({ id: c.id, data: { ...c, isActive: !c.isActive } })} />
-                            </td>
-                            <td>
-                                <button className="text-red-600" onClick={() => remove.mutate(c.id)}>Delete</button>
-                            </td>
-                        </tr>
-                    ))}
+                    {(currencies || []).map((c: any, idx: number) => {
+                        const id = c._id || c.id || `curr-${idx}`;
+                        return (
+                            <tr key={id} className="border-b">
+                                <td className="py-2">{c.code}</td>
+                                <td><span className="bg-gray-200 px-2 py-1 rounded text-sm">{c.symbol}</span></td>
+                                <td>
+                                    {c.isDefault ? <span className="text-green-600 font-bold">Yes</span> : <button className="text-blue-600 hover:underline" onClick={() => setDefault.mutate(id)}>Set Default</button>}
+                                </td>
+                                <td>
+                                    <input type="checkbox" checked={!!c.isActive} onChange={() => update.mutate({ id, data: { isActive: !c.isActive } })} />
+                                </td>
+                                <td>
+                                    <button className="text-red-600 hover:underline" onClick={() => remove.mutate(id)}>Delete</button>
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

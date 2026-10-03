@@ -12,7 +12,15 @@ export const PropertyStatusManager: React.FC = () => {
         <div>
             <div className="flex justify-between mb-4">
                 <h2 className="text-xl font-semibold">Property Statuses</h2>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded" onClick={() => create.mutate({ name: 'New Status', color: '#000000' })}>Add Status</button>
+                <button 
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" 
+                    onClick={() => {
+                        const suffix = Math.floor(Math.random() * 900 + 100);
+                        create.mutate({ name: `Status ${suffix}`, code: `STATUS_${suffix}`, color: '#2563eb', isActive: true });
+                    }}
+                >
+                    Add Status
+                </button>
             </div>
             <table className="w-full text-left border-collapse">
                 <thead>
@@ -24,18 +32,21 @@ export const PropertyStatusManager: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {(statuses || []).map((s: any) => (
-                        <tr key={s.id} className="border-b">
-                            <td className="py-2">
-                                <span className="px-3 py-1 rounded text-white" style={{ backgroundColor: s.color || '#333' }}>{s.name}</span>
-                            </td>
-                            <td>{s.name}</td>
-                            <td>{s.color}</td>
-                            <td>
-                                <button className="text-red-600" onClick={() => remove.mutate(s.id)}>Delete</button>
-                            </td>
-                        </tr>
-                    ))}
+                    {(statuses || []).map((s: any, idx: number) => {
+                        const id = s._id || s.id || `s-${idx}`;
+                        return (
+                            <tr key={id} className="border-b">
+                                <td className="py-2">
+                                    <span className="px-3 py-1 rounded text-white" style={{ backgroundColor: s.color || '#333' }}>{s.name}</span>
+                                </td>
+                                <td>{s.name}</td>
+                                <td>{s.color || '#333'}</td>
+                                <td>
+                                    <button className="text-red-600 hover:underline" onClick={() => remove.mutate(id)}>Delete</button>
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

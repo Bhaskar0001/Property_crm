@@ -22,14 +22,22 @@ export function PropertyListPage() {
     isPublished: published === 'true' ? true : published === 'false' ? false : undefined,
   });
 
-  const { data: countries } = useCountries();
-  const { data: propertyTypes } = usePropertyTypes();
-  const { data: statuses } = usePropertyStatuses();
+  const { data: countriesData } = useCountries();
+  const { data: propertyTypesData } = usePropertyTypes();
+  const { data: statusesData } = usePropertyStatuses();
+
+  const countries = Array.isArray(countriesData) ? countriesData : (countriesData as any)?.data || [];
+  const propertyTypes = Array.isArray(propertyTypesData) ? propertyTypesData : (propertyTypesData as any)?.data || [];
+  const statuses = Array.isArray(statusesData) ? statusesData : (statusesData as any)?.data || [];
 
   const togglePublish = useTogglePublishProperty();
   const deleteProperty = useDeleteProperty();
 
-  const properties = propertiesResponse?.data || [];
+  const properties = Array.isArray(propertiesResponse?.data)
+    ? propertiesResponse.data
+    : Array.isArray(propertiesResponse)
+    ? propertiesResponse
+    : [];
   const pagination = propertiesResponse?.pagination;
 
   return (

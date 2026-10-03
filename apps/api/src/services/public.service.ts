@@ -1,8 +1,10 @@
+import mongoose from 'mongoose';
 import { PropertyModel } from '../models/Property';
 import { MediaModel } from '../models/Media';
 import { PropertyDocumentModel } from '../models/PropertyDocument';
 import { CountryModel } from '../models/Country';
 import { PropertyTypeModel } from '../models/PropertyType';
+import { ListingTypeModel } from '../models/ListingType';
 
 export interface PublicPropertyFilters {
   search?: string;
@@ -43,15 +45,57 @@ export class PublicService {
     }
 
     if (filters.country) {
-      query.country = filters.country;
+      if (mongoose.isValidObjectId(filters.country)) {
+        query.country = filters.country;
+      } else {
+        const countryDoc = await CountryModel.findOne({
+          $or: [
+            { isoCode: filters.country.toUpperCase() },
+            { name: new RegExp(`^${filters.country}$`, 'i') },
+          ],
+        });
+        if (countryDoc) {
+          query.country = countryDoc._id;
+        } else {
+          query.country = new mongoose.Types.ObjectId();
+        }
+      }
     }
 
     if (filters.propertyType) {
-      query.propertyType = filters.propertyType;
+      if (mongoose.isValidObjectId(filters.propertyType)) {
+        query.propertyType = filters.propertyType;
+      } else {
+        const typeDoc = await PropertyTypeModel.findOne({
+          $or: [
+            { slug: filters.propertyType.toLowerCase() },
+            { name: new RegExp(`^${filters.propertyType}$`, 'i') },
+          ],
+        });
+        if (typeDoc) {
+          query.propertyType = typeDoc._id;
+        } else {
+          query.propertyType = new mongoose.Types.ObjectId();
+        }
+      }
     }
 
     if (filters.listingType) {
-      query.listingType = filters.listingType;
+      if (mongoose.isValidObjectId(filters.listingType)) {
+        query.listingType = filters.listingType;
+      } else {
+        const listingDoc = await ListingTypeModel.findOne({
+          $or: [
+            { slug: filters.listingType.toLowerCase() },
+            { name: new RegExp(`^${filters.listingType}$`, 'i') },
+          ],
+        });
+        if (listingDoc) {
+          query.listingType = listingDoc._id;
+        } else {
+          query.listingType = new mongoose.Types.ObjectId();
+        }
+      }
     }
 
     if (filters.city) {

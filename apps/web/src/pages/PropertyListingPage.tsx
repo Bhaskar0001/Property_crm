@@ -26,6 +26,8 @@ export function PropertyListingPage() {
   const [country, setCountry] = useState(searchParams.get('country') || '');
   const [city, setCity] = useState(searchParams.get('city') || '');
   const [propertyType, setPropertyType] = useState(searchParams.get('propertyType') || '');
+  const [listingType, setListingType] = useState(searchParams.get('listingType') || '');
+  const [isFeatured, setIsFeatured] = useState(searchParams.get('isFeatured') || '');
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');
   const [bedrooms, setBedrooms] = useState(searchParams.get('bedrooms') || '');
@@ -42,6 +44,8 @@ export function PropertyListingPage() {
     setCountry(searchParams.get('country') || '');
     setCity(searchParams.get('city') || '');
     setPropertyType(searchParams.get('propertyType') || '');
+    setListingType(searchParams.get('listingType') || '');
+    setIsFeatured(searchParams.get('isFeatured') || '');
     setMinPrice(searchParams.get('minPrice') || '');
     setMaxPrice(searchParams.get('maxPrice') || '');
     setBedrooms(searchParams.get('bedrooms') || '');
@@ -56,6 +60,8 @@ export function PropertyListingPage() {
     country: country || undefined,
     city: city || undefined,
     propertyType: propertyType || undefined,
+    listingType: listingType || undefined,
+    isFeatured: isFeatured ? isFeatured === 'true' : undefined,
     minPrice: minPrice ? Number(minPrice) : undefined,
     maxPrice: maxPrice ? Number(maxPrice) : undefined,
     bedrooms: bedrooms ? Number(bedrooms) : undefined,
@@ -75,6 +81,8 @@ export function PropertyListingPage() {
     if (country) nextParams.set('country', country);
     if (city) nextParams.set('city', city);
     if (propertyType) nextParams.set('propertyType', propertyType);
+    if (listingType) nextParams.set('listingType', listingType);
+    if (isFeatured) nextParams.set('isFeatured', isFeatured);
     if (minPrice) nextParams.set('minPrice', minPrice);
     if (maxPrice) nextParams.set('maxPrice', maxPrice);
     if (bedrooms) nextParams.set('bedrooms', bedrooms);
@@ -91,6 +99,8 @@ export function PropertyListingPage() {
     setCountry('');
     setCity('');
     setPropertyType('');
+    setListingType('');
+    setIsFeatured('');
     setMinPrice('');
     setMaxPrice('');
     setBedrooms('');
