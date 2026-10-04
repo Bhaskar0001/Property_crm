@@ -28,6 +28,10 @@ export class WhatsAppClient {
     const cleanTo = to.replace(/[^0-9]/g, '');
 
     if (!this.isConfigured()) {
+      if (config.env === 'production') {
+        logger.error('WhatsApp dispatch failed: WHATSAPP_TOKEN or WHATSAPP_PHONE_NUMBER_ID is not configured in production.');
+        return { success: false, error: 'WhatsApp credentials not configured on server.' };
+      }
       const mockId = `wamid.HBgM${Date.now()}${Math.floor(Math.random() * 1000)}`;
       logger.info(
         `\n======================================================\n📱 [WHATSAPP DEV DISPATCH]\nTO: +${cleanTo}\nTEXT: "${text}"\nMESSAGE ID: ${mockId}\n======================================================\n`
@@ -79,6 +83,10 @@ export class WhatsAppClient {
     const text = `🏡 *${property.title}*\n📍 ${property.city || 'Prime Location'}\n💰 Asking: *${symbol}${property.price.toLocaleString()}*\n\nView full specifications, photos, and virtual tour:\n🔗 ${property.publicUrl}`;
 
     if (!this.isConfigured()) {
+      if (config.env === 'production') {
+        logger.error('WhatsApp property share failed: credentials not configured in production.');
+        return { success: false, error: 'WhatsApp credentials not configured on server.' };
+      }
       const mockId = `wamid.HBgProp${Date.now()}${Math.floor(Math.random() * 1000)}`;
       logger.info(
         `\n======================================================\n📱 [WHATSAPP PROPERTY SHARE]\nTO: +${cleanTo}\nIMAGE: ${property.coverImage || 'None'}\nCAPTION:\n${text}\nMESSAGE ID: ${mockId}\n======================================================\n`
@@ -135,6 +143,10 @@ export class WhatsAppClient {
     const cleanTo = to.replace(/[^0-9]/g, '');
 
     if (!this.isConfigured()) {
+      if (config.env === 'production') {
+        logger.error('WhatsApp template dispatch failed: credentials not configured in production.');
+        return { success: false, error: 'WhatsApp credentials not configured on server.' };
+      }
       const mockId = `wamid.HBgTpl${Date.now()}`;
       logger.info(
         `\n======================================================\n📱 [WHATSAPP TEMPLATE DISPATCH]\nTO: +${cleanTo}\nTEMPLATE: ${templateName} (${languageCode})\nMESSAGE ID: ${mockId}\n======================================================\n`

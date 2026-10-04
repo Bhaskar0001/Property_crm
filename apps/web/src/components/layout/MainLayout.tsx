@@ -1,6 +1,9 @@
 import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
+import { FloatingWhatsAppButton } from '../communication/FloatingWhatsAppButton';
+import { FloatingCallButton } from '../communication/FloatingCallButton';
+import { PropertyAIChatbot } from '../chat/PropertyAIChatbot';
 
 export function MainLayout() {
   return (
@@ -10,6 +13,11 @@ export function MainLayout() {
         <Outlet />
       </main>
       <Footer />
+
+      {/* Persistent Communication & Concierge Hubs */}
+      <FloatingWhatsAppButton />
+      <FloatingCallButton />
+      <PropertyAIChatbot />
     </div>
   );
 }

@@ -10,7 +10,13 @@ export const config = {
   apiUrl: process.env.API_URL || 'http://localhost:5000',
 
   mongodb: {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/realestate',
+    uri: (() => {
+      const uri = process.env.MONGODB_URI;
+      if (process.env.NODE_ENV === 'production' && !uri) {
+        throw new Error('FATAL SECURITY ERROR: MONGODB_URI must be provided in production!');
+      }
+      return uri || 'mongodb://localhost:27017/realestate';
+    })(),
   },
 
   redis: {
@@ -18,8 +24,20 @@ export const config = {
   },
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'dev-secret-change-me',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-change-me',
+    secret: (() => {
+      const sec = process.env.JWT_SECRET;
+      if (process.env.NODE_ENV === 'production' && (!sec || sec === 'dev-secret-change-me')) {
+        throw new Error('FATAL SECURITY ERROR: JWT_SECRET must be set to a secure key in production!');
+      }
+      return sec || 'dev-secret-change-me';
+    })(),
+    refreshSecret: (() => {
+      const sec = process.env.JWT_REFRESH_SECRET;
+      if (process.env.NODE_ENV === 'production' && (!sec || sec === 'dev-refresh-secret-change-me')) {
+        throw new Error('FATAL SECURITY ERROR: JWT_REFRESH_SECRET must be set to a secure key in production!');
+      }
+      return sec || 'dev-refresh-secret-change-me';
+    })(),
     expiry: process.env.JWT_EXPIRY || '15m',
     refreshExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
   },
@@ -72,5 +90,14 @@ export const config = {
       process.env.PUBLIC_WEBSITE_URL || 'http://localhost:3000',
       process.env.ADMIN_URL || 'http://localhost:3001',
     ].filter(Boolean),
+  },
+  agency: {
+    name: process.env.AGENCY_NAME || '',
+    phone: process.env.AGENCY_PHONE || '',
+    whatsapp: process.env.AGENCY_WHATSAPP || '',
+    email: process.env.AGENCY_EMAIL || '',
+    address: process.env.AGENCY_ADDRESS || '',
+    officeHours: process.env.AGENCY_OFFICE_HOURS || '',
+    videoConsultationUrl: process.env.AGENCY_VIDEO_URL || '',
   },
 } as const;

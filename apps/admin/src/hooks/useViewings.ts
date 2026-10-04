@@ -35,6 +35,9 @@ export interface Viewing {
   scheduledDate: string;
   scheduledTime: string;
   duration: number;
+  visitType?: 'in_person' | 'virtual';
+  virtualPlatform?: string;
+  meetingLink?: string;
   status: 'REQUESTED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'RESCHEDULED' | 'NO_SHOW' | string;
   notes?: string;
   feedback?: string;
@@ -100,6 +103,9 @@ export function useCreateViewing() {
       customerName?: string;
       customerEmail?: string;
       customerPhone?: string;
+      visitType?: 'in_person' | 'virtual';
+      virtualPlatform?: string;
+      meetingLink?: string;
       scheduledDate: string;
       scheduledTime?: string;
       duration?: number;

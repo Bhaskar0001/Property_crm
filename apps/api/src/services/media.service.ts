@@ -15,33 +15,75 @@ export class MediaService {
     let currentSortOrder = lastMedia ? lastMedia.sortOrder + 1 : 0;
 
     for (const file of files) {
-      if (!file.mimetype.startsWith('image/')) continue;
-      
-      const processed = await imageService.processImage(file.buffer);
-      const ext = path.extname(file.originalname) || '.jpg';
+      const ext = path.extname(file.originalname) || '';
       const baseKey = `properties/${propertyId}/${crypto.randomBytes(16).toString('hex')}`;
-      
-      const [originalUrl, webUrl, thumbnailUrl] = await Promise.all([
-        storageService.uploadBuffer(processed.originalBuffer, `${baseKey}_original${ext}`, file.mimetype, true),
-        storageService.uploadBuffer(processed.webBuffer, `${baseKey}_web.webp`, 'image/webp', true),
-        storageService.uploadBuffer(processed.thumbBuffer, `${baseKey}_thumb.webp`, 'image/webp', true),
-      ]);
 
-      const media = new MediaModel({
-        property: propertyId,
-        type: 'image',
-        originalUrl,
-        webUrl,
-        thumbnailUrl,
-        fileName: file.originalname,
-        fileSize: file.size,
-        mimeType: file.mimetype,
-        sortOrder: currentSortOrder++,
-        uploadedBy
-      });
+      if (file.mimetype.startsWith('image/')) {
+        const processed = await imageService.processImage(file.buffer);
+        const imageExt = ext || '.jpg';
+        
+        const [originalUrl, webUrl, thumbnailUrl] = await Promise.all([
+          storageService.uploadBuffer(processed.originalBuffer, `${baseKey}_original${imageExt}`, file.mimetype, true),
+          storageService.uploadBuffer(processed.webBuffer, `${baseKey}_web.webp`, 'image/webp', true),
+          storageService.uploadBuffer(processed.thumbBuffer, `${baseKey}_thumb.webp`, 'image/webp', true),
+        ]);
 
-      await media.save();
-      results.push(media);
+        const media = new MediaModel({
+          property: propertyId,
+          type: 'image',
+          originalUrl,
+          webUrl,
+          thumbnailUrl,
+          fileName: file.originalname,
+          fileSize: file.size,
+          mimeType: file.mimetype,
+          sortOrder: currentSortOrder++,
+          uploadedBy
+        });
+
+        await media.save();
+        results.push(media);
+      } else if (file.mimetype.startsWith('video/') || ['.mp4', '.webm', '.mov', '.m4v'].includes(ext.toLowerCase())) {
+        const videoExt = ext || '.mp4';
+        const fileUrl = await storageService.uploadBuffer(file.buffer, `${baseKey}_video${videoExt}`, file.mimetype || 'video/mp4', true);
+
+        const media = new MediaModel({
+          property: propertyId,
+          type: 'video',
+          originalUrl: fileUrl,
+          webUrl: fileUrl,
+          thumbnailUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80',
+          fileName: file.originalname,
+          fileSize: file.size,
+          mimeType: file.mimetype || 'video/mp4',
+          sortOrder: currentSortOrder++,
+          uploadedBy
+        });
+
+        await media.save();
+        results.push(media);
+
+        // Also update videoUrl on Property if not set
+        await PropertyModel.findByIdAndUpdate(propertyId, { $set: { videoUrl: fileUrl } });
+      } else if (file.mimetype === 'application/pdf' || ext.toLowerCase() === '.pdf') {
+        const fileUrl = await storageService.uploadBuffer(file.buffer, `${baseKey}_doc.pdf`, 'application/pdf', true);
+
+        const media = new MediaModel({
+          property: propertyId,
+          type: 'document',
+          originalUrl: fileUrl,
+          webUrl: fileUrl,
+          thumbnailUrl: fileUrl,
+          fileName: file.originalname,
+          fileSize: file.size,
+          mimeType: 'application/pdf',
+          sortOrder: currentSortOrder++,
+          uploadedBy
+        });
+
+        await media.save();
+        results.push(media);
+      }
     }
 
     // Update Property model image count and set cover image if it isn't set
@@ -51,16 +93,51 @@ export class MediaService {
       property.imageCount = allMediaCount;
       
       if (!property.coverImage && results.length > 0) {
-        const firstMedia = results[0];
-        firstMedia.isCover = true;
-        await firstMedia.save();
-        property.coverImage = firstMedia.thumbnailUrl;
+        const firstImage = results.find(m => m.type === 'image');
+        if (firstImage) {
+          firstImage.isCover = true;
+          await firstImage.save();
+          property.coverImage = firstImage.thumbnailUrl;
+        }
       }
       
       await property.save();
     }
 
     return results;
+  }
+
+  public async addEmbedMedia(propertyId: string, payload: { url: string; type?: string; title?: string; uploadedBy?: string }) {
+    const lastMedia = await MediaModel.findOne({ property: propertyId }).sort('-sortOrder');
+    const sortOrder = lastMedia ? lastMedia.sortOrder + 1 : 0;
+
+    const isTour = payload.type === 'virtual_tour' || payload.url.includes('matterport') || payload.url.includes('kuula');
+    const mediaType = isTour ? 'virtual_tour' : 'video';
+
+    const media = new MediaModel({
+      property: propertyId,
+      type: mediaType,
+      originalUrl: payload.url,
+      webUrl: payload.url,
+      thumbnailUrl: isTour 
+        ? 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80'
+        : 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80',
+      fileName: payload.title || (isTour ? '3D Virtual Walkthrough' : 'Video Tour'),
+      fileSize: 0,
+      mimeType: isTour ? 'application/x-virtual-tour' : 'video/embed',
+      sortOrder,
+      uploadedBy: payload.uploadedBy ? new mongoose.Types.ObjectId(payload.uploadedBy) : undefined,
+    });
+
+    await media.save();
+
+    if (isTour) {
+      await PropertyModel.findByIdAndUpdate(propertyId, { virtualTourUrl: payload.url });
+    } else {
+      await PropertyModel.findByIdAndUpdate(propertyId, { videoUrl: payload.url });
+    }
+
+    return media;
   }
 
   public async getPropertyMedia(propertyId: string) {

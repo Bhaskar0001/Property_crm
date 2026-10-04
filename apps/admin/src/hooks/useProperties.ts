@@ -145,6 +145,20 @@ export const useDeleteMedia = () => {
   });
 };
 
+export const useAddEmbedMedia = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ propertyId, url, type, title }: { propertyId: string; url: string; type?: string; title?: string }) => {
+      const { data } = await api.post(`/media/embed/${propertyId}`, { url, type, title });
+      return data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['property-media', variables.propertyId] });
+      queryClient.invalidateQueries({ queryKey: ['property', variables.propertyId] });
+    },
+  });
+};
+
 export const usePropertyDocuments = (propertyId: string) => {
   return useQuery({
     queryKey: ['property-documents', propertyId],
@@ -183,3 +197,33 @@ export const useDeleteDocument = () => {
     },
   });
 };
+
+export const useImportProperties = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (rows: any[]) => {
+      const { data } = await api.post('/properties/import', { rows });
+      return data?.data || data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['properties'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+};
+
+export const downloadPropertiesCsv = async (filters: any) => {
+  const response = await api.get('/properties/export', {
+    params: filters,
+    responseType: 'blob',
+  });
+  const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `properties-export-${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+

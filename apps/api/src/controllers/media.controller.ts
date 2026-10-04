@@ -19,6 +19,23 @@ export const uploadMedia = async (req: AuthRequest, res: Response, next: NextFun
   }
 };
 
+export const addEmbedMedia = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { propertyId } = req.params;
+    const { url, type, title } = req.body;
+    const userId = req.user?._id?.toString() || '';
+
+    if (!url) {
+      return res.status(400).json({ success: false, message: 'URL is required' });
+    }
+
+    const media = await mediaService.addEmbedMedia(propertyId, { url, type, title, uploadedBy: userId });
+    res.status(201).json({ success: true, data: media });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getPropertyMedia = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { propertyId } = req.params;

@@ -33,4 +33,7 @@ router.post('/enquiries', optionalCustomerAuth, (req, res, next) =>
   customerController.createEnquiry(req, res, next)
 );
 
+// Customer Offers endpoint
+router.get('/offers', authenticateCustomer, (req, res, next) => customerController.getOffers(req, res, next));
+
 export const customerRouter = router;

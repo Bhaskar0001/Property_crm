@@ -6,6 +6,10 @@
     "dev": "tsx watch src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
+    "seed": "tsx src/scripts/seed.ts",
+    "seed:properties": "tsx src/scripts/seed_properties.ts",
+    "seed:all": "tsx src/scripts/seed.ts && tsx src/scripts/seed_properties.ts",
+    "reset:admin": "tsx src/scripts/reset_admin.ts",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist"
   },

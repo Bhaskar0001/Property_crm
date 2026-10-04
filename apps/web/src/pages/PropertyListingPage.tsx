@@ -1,42 +1,64 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useParams, Link } from 'react-router-dom';
 import {
-  Search,
-  Filter,
-  SlidersHorizontal,
   RotateCcw,
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  X,
+  MapPin,
+  Grid,
+  Map as MapIcon,
+  Columns,
+  Navigation,
+  Bed,
+  Bath,
+  Square,
+  Star,
 } from 'lucide-react';
 import {
   usePublicProperties,
   usePublicCountries,
   usePublicPropertyTypes,
+  usePublicListingTypes,
 } from '../hooks/usePublicData';
 import { PropertyCard } from '../components/property/PropertyCard';
+import { PropertyMap } from '../components/property/PropertyMap';
 import { PublicPropertiesFilter } from '../types';
+import { WORLD_COUNTRIES } from '@repo/shared';
 
 export function PropertyListingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { country: routeCountry, propertyType: routePropertyType } = useParams<{
+    country?: string;
+    propertyType?: string;
+  }>();
+
+  // View Mode: 'split' (cards on left, map on right - default as in screenshot), 'grid', 'map'
+  const [viewMode, setViewMode] = useState<'split' | 'grid' | 'map'>('split');
 
   // URL State synced filters
   const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [country, setCountry] = useState(searchParams.get('country') || '');
+  const [country, setCountry] = useState(routeCountry || searchParams.get('country') || '');
   const [city, setCity] = useState(searchParams.get('city') || '');
-  const [propertyType, setPropertyType] = useState(searchParams.get('propertyType') || '');
+  const [propertyType, setPropertyType] = useState(
+    routePropertyType || searchParams.get('propertyType') || ''
+  );
   const [listingType, setListingType] = useState(searchParams.get('listingType') || '');
-  const [isFeatured, setIsFeatured] = useState(searchParams.get('isFeatured') || '');
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');
   const [bedrooms, setBedrooms] = useState(searchParams.get('bedrooms') || '');
-  const [berRating, setBerRating] = useState(searchParams.get('berRating') || '');
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc' | 'popular'>(
     (searchParams.get('sortBy') as any) || 'newest'
   );
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Map state
+  const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [searchAsMapMoves, setSearchAsMapMoves] = useState(true);
+  const [mapBounds, setMapBounds] = useState<{
+    neLat: number;
+    neLng: number;
+    swLat: number;
+    swLng: number;
+  } | null>(null);
 
   // Sync state if searchParams change externally
   useEffect(() => {
@@ -45,11 +67,9 @@ export function PropertyListingPage() {
     setCity(searchParams.get('city') || '');
     setPropertyType(searchParams.get('propertyType') || '');
     setListingType(searchParams.get('listingType') || '');
-    setIsFeatured(searchParams.get('isFeatured') || '');
     setMinPrice(searchParams.get('minPrice') || '');
     setMaxPrice(searchParams.get('maxPrice') || '');
     setBedrooms(searchParams.get('bedrooms') || '');
-    setBerRating(searchParams.get('berRating') || '');
     setSortBy((searchParams.get('sortBy') as any) || 'newest');
     setPage(Number(searchParams.get('page')) || 1);
   }, [searchParams]);
@@ -61,37 +81,52 @@ export function PropertyListingPage() {
     city: city || undefined,
     propertyType: propertyType || undefined,
     listingType: listingType || undefined,
-    isFeatured: isFeatured ? isFeatured === 'true' : undefined,
     minPrice: minPrice ? Number(minPrice) : undefined,
     maxPrice: maxPrice ? Number(maxPrice) : undefined,
     bedrooms: bedrooms ? Number(bedrooms) : undefined,
-    berRating: berRating || undefined,
     sortBy,
+    ...(searchAsMapMoves && mapBounds
+      ? {
+          neLat: mapBounds.neLat,
+          neLng: mapBounds.neLng,
+          swLat: mapBounds.swLat,
+          swLng: mapBounds.swLng,
+        }
+      : {}),
     page,
-    limit: 9,
+    limit: viewMode === 'split' ? 24 : 12,
   };
 
   const { data, isLoading } = usePublicProperties(queryFilters);
   const { data: countries = [] } = usePublicCountries();
   const { data: propertyTypes = [] } = usePublicPropertyTypes();
+  const { data: listingTypes = [] } = usePublicListingTypes();
 
-  const applyFilters = () => {
+  const properties = data?.data || [];
+  const pagination = data?.pagination;
+
+  const applyFilters = (customParams?: Record<string, string>) => {
     const nextParams = new URLSearchParams();
     if (search) nextParams.set('search', search);
     if (country) nextParams.set('country', country);
     if (city) nextParams.set('city', city);
     if (propertyType) nextParams.set('propertyType', propertyType);
     if (listingType) nextParams.set('listingType', listingType);
-    if (isFeatured) nextParams.set('isFeatured', isFeatured);
     if (minPrice) nextParams.set('minPrice', minPrice);
     if (maxPrice) nextParams.set('maxPrice', maxPrice);
     if (bedrooms) nextParams.set('bedrooms', bedrooms);
-    if (berRating) nextParams.set('berRating', berRating);
     if (sortBy) nextParams.set('sortBy', sortBy);
+
+    if (customParams) {
+      Object.entries(customParams).forEach(([k, v]) => {
+        if (v) nextParams.set(k, v);
+        else nextParams.delete(k);
+      });
+    }
+
     nextParams.set('page', '1');
     setPage(1);
     setSearchParams(nextParams);
-    setMobileFilterOpen(false);
   };
 
   const handleResetFilters = () => {
@@ -100,397 +135,502 @@ export function PropertyListingPage() {
     setCity('');
     setPropertyType('');
     setListingType('');
-    setIsFeatured('');
     setMinPrice('');
     setMaxPrice('');
     setBedrooms('');
-    setBerRating('');
     setSortBy('newest');
+    setMapBounds(null);
     setPage(1);
     setSearchParams(new URLSearchParams());
-    setMobileFilterOpen(false);
   };
 
-  const handlePageChange = (newPage: number) => {
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set('page', String(newPage));
-    setSearchParams(nextParams);
-    setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setMapBounds({
+          neLat: latitude + 0.05,
+          neLng: longitude + 0.05,
+          swLat: latitude - 0.05,
+          swLng: longitude - 0.05,
+        });
+        setSearch('');
+        applyFilters();
+      },
+      () => {
+        setSearch('');
+        applyFilters();
+      }
+    );
   };
 
-  const properties = data?.data || [];
-  const pagination = data?.pagination;
+  const handleBoundsChange = (bounds: {
+    neLat: number;
+    neLng: number;
+    swLat: number;
+    swLng: number;
+  }) => {
+    setMapBounds(bounds);
+  };
 
   return (
-    <div className="bg-[#fcfdfd] min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumbs */}
-        <nav className="flex items-center space-x-2 text-xs text-slate-500 mb-6">
-          <Link to="/" className="hover:text-[#004274] flex items-center">
-            <Home className="w-3.5 h-3.5 mr-1" />
-            <span>Home</span>
-          </Link>
-          <span>/</span>
-          <span className="font-semibold text-slate-800">Properties</span>
-        </nav>
-
-        {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between pb-6 mb-8 border-b border-slate-200">
-          <div>
-            <h1 className="text-3xl font-extrabold text-[#004274] tracking-tight">
-              Property Portfolio
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              {pagination ? (
-                <span>
-                  Showing <strong className="text-slate-800">{properties.length}</strong> of{' '}
-                  <strong className="text-slate-800">{pagination.total}</strong> premium listings
-                </span>
-              ) : (
-                'Loading current listings...'
-              )}
-            </p>
-          </div>
-
-          {/* Sort bar & Mobile filter button */}
-          <div className="mt-4 md:mt-0 flex items-center space-x-3">
-            <button
-              onClick={() => setMobileFilterOpen(true)}
-              className="lg:hidden flex items-center space-x-2 px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-700 shadow-sm"
-            >
-              <SlidersHorizontal className="w-4 h-4 text-[#004274]" />
-              <span>Filters</span>
-            </button>
-
-            <div className="flex items-center space-x-2">
-              <label className="text-xs font-semibold text-slate-500 hidden sm:inline">Sort by:</label>
-              <select
-                value={sortBy}
-                onChange={(e) => {
-                  const val = e.target.value as any;
-                  setSortBy(val);
-                  const nextParams = new URLSearchParams(searchParams);
-                  nextParams.set('sortBy', val);
-                  setSearchParams(nextParams);
-                }}
-                className="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#004274]"
-              >
-                <option value="newest">Newest First</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-                <option value="popular">Most Popular</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content: Sidebar + Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Desktop Filter Sidebar */}
-          <aside className="hidden lg:block lg:col-span-1 space-y-6 bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm h-fit sticky top-28">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-[#004274]" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-                  Refine Search
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="text-[11px] font-semibold text-slate-500 hover:text-[#004274] flex items-center space-x-1"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>Reset</span>
-              </button>
-            </div>
-
-            {/* Keyword */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                Keyword / Address
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="e.g. Ballsbridge or Ref..."
-                  className="w-full pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#004274]"
-                />
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5" />
-              </div>
-            </div>
-
-            {/* Country */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                Country
-              </label>
-              <select
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004274]"
-              >
-                <option value="">All Countries</option>
-                {countries.map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.name} ({c.propertyCount})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Property Type */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                Property Type
-              </label>
-              <select
-                value={propertyType}
-                onChange={(e) => setPropertyType(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004274]"
-              >
-                <option value="">All Types</option>
-                {propertyTypes.map((t) => (
-                  <option key={t._id} value={t._id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Price Range */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                Price Range (€)
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  placeholder="Min"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004274]"
-                />
-                <input
-                  type="number"
-                  placeholder="Max"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004274]"
-                />
-              </div>
-            </div>
-
-            {/* Bedrooms */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                Bedrooms (Min)
-              </label>
-              <div className="grid grid-cols-5 gap-1">
-                {['', '1', '2', '3', '4+'].map((opt) => {
-                  const val = opt === '4+' ? '4' : opt;
-                  const isSelected = bedrooms === val;
-                  return (
-                    <button
-                      key={opt || 'all'}
-                      type="button"
-                      onClick={() => setBedrooms(val)}
-                      className={`py-1.5 text-xs font-semibold rounded ${
-                        isSelected
-                          ? 'bg-[#004274] text-white'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                      }`}
-                    >
-                      {opt || 'Any'}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* BER Rating (Ireland Specific) */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                BER Rating (Ireland)
-              </label>
-              <select
-                value={berRating}
-                onChange={(e) => setBerRating(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004274]"
-              >
-                <option value="">Any BER Rating</option>
-                <option value="A1">A1</option>
-                <option value="A2">A2</option>
-                <option value="A3">A3</option>
-                <option value="B1">B1</option>
-                <option value="B2">B2</option>
-                <option value="B3">B3</option>
-                <option value="C1">C1</option>
-                <option value="C2">C2</option>
-              </select>
-            </div>
-
-            {/* Apply Button */}
-            <button
-              type="button"
-              onClick={applyFilters}
-              className="w-full py-2.5 bg-[#004274] hover:bg-[#00335a] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-sm"
-            >
-              Apply Filters
-            </button>
-          </aside>
-
-          {/* Listings Grid */}
-          <div className="lg:col-span-3">
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-white rounded-xl h-80 animate-pulse border border-slate-200"
-                  />
-                ))}
-              </div>
-            ) : properties.length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {properties.map((prop) => (
-                    <PropertyCard key={prop._id} property={prop} />
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {pagination && pagination.totalPages > 1 && (
-                  <div className="mt-12 flex items-center justify-center space-x-2">
-                    <button
-                      disabled={!pagination.hasPrev}
-                      onClick={() => handlePageChange(pagination.page - 1)}
-                      className="p-2 border border-slate-300 rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    {Array.from({ length: pagination.totalPages }, (_, idx) => idx + 1).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => handlePageChange(p)}
-                        className={`w-9 h-9 text-xs font-bold rounded-lg ${
-                          p === pagination.page
-                            ? 'bg-[#004274] text-white'
-                            : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                    <button
-                      disabled={!pagination.hasNext}
-                      onClick={() => handlePageChange(pagination.page + 1)}
-                      className="p-2 border border-slate-300 rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="bg-white rounded-xl p-12 text-center border border-slate-200">
-                <p className="text-slate-700 font-bold text-base mb-1">
-                  No properties matched your criteria
-                </p>
-                <p className="text-slate-500 text-xs mb-6 max-w-sm mx-auto">
-                  Try broadening your search, removing price constraints, or exploring other territories.
-                </p>
-                <button
-                  onClick={handleResetFilters}
-                  className="px-4 py-2 bg-[#004274] text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-[#00335a]"
-                >
-                  Clear All Filters
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      {/* Mobile Filter Drawer */}
-      {mobileFilterOpen && (
-        <div className="fixed inset-0 z-50 flex bg-black/50 backdrop-blur-sm lg:hidden">
-          <div className="ml-auto w-full max-w-xs bg-white h-full p-6 overflow-y-auto space-y-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b pb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-900">Filters</span>
-              <button onClick={() => setMobileFilterOpen(false)} className="p-1 text-slate-500">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                Keyword
-              </label>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Top Floating Filter Capsule (Matching Screenshot 1 & 2) */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3 shadow-xs">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Capsule Search Bar */}
+          <div className="flex-1 flex flex-wrap items-center gap-2">
+            {/* Destination with Locate Button */}
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded text-xs"
+                onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
+                placeholder="Destination or city (e.g. Amsterdam, Paris)..."
+                className="w-full pl-9 pr-9 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/70 border border-slate-300 rounded-full focus:bg-white focus:ring-2 focus:ring-[#004274] focus:outline-none transition-all placeholder:text-slate-400"
               />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                Country
-              </label>
-              <select
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded text-xs"
-              >
-                <option value="">All Countries</option>
-                {countries.map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                Property Type
-              </label>
-              <select
-                value={propertyType}
-                onChange={(e) => setPropertyType(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded text-xs"
-              >
-                <option value="">All Types</option>
-                {propertyTypes.map((t) => (
-                  <option key={t._id} value={t._id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="pt-2 flex space-x-2">
               <button
                 type="button"
-                onClick={handleResetFilters}
-                className="w-1/2 py-2 border border-slate-300 text-xs font-semibold rounded text-slate-700"
+                onClick={handleLocateMe}
+                title="Use current location"
+                className="absolute right-2.5 top-2 p-0.5 rounded-full text-slate-400 hover:text-[#004274] transition"
               >
-                Reset
+                <Navigation className="w-3.5 h-3.5" />
               </button>
+            </div>
+
+            {/* Listing Type / Dates Selector (Dynamic from Admin) */}
+            <select
+              value={listingType}
+              onChange={(e) => {
+                setListingType(e.target.value);
+                applyFilters({ listingType: e.target.value });
+              }}
+              className="px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100/70 focus:outline-none focus:ring-2 focus:ring-[#004274] transition cursor-pointer font-medium"
+            >
+              <option value="">Select dates / Type</option>
+              {listingTypes && listingTypes.length > 0 &&
+                listingTypes.map((lt) => (
+                  <option key={lt._id} value={lt.slug || lt.name.toLowerCase()}>
+                    {lt.name} {lt.propertyCount > 0 ? `(${lt.propertyCount})` : ''}
+                  </option>
+                ))}
+            </select>
+
+            {/* Guests / Bedrooms Selector */}
+            <select
+              value={bedrooms}
+              onChange={(e) => {
+                setBedrooms(e.target.value);
+                applyFilters({ bedrooms: e.target.value });
+              }}
+              className="px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100/70 focus:outline-none focus:ring-2 focus:ring-[#004274] transition cursor-pointer font-medium"
+            >
+              <option value="">Guests / Beds</option>
+              <option value="1">1+ Bedrooms</option>
+              <option value="2">2+ Bedrooms</option>
+              <option value="3">3+ Bedrooms</option>
+              <option value="4">4+ Bedrooms</option>
+              <option value="5">5+ Bedrooms</option>
+            </select>
+
+            {/* Country Selector (Dynamic from Admin + Auto-updated) */}
+            <select
+              value={country}
+              onChange={(e) => {
+                setCountry(e.target.value);
+                applyFilters({ country: e.target.value });
+              }}
+              className="px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100/70 focus:outline-none focus:ring-2 focus:ring-[#004274] transition cursor-pointer font-medium"
+            >
+              <option value="">All Countries ({countries.length})</option>
+              {countries.map((c) => {
+                const matched = WORLD_COUNTRIES.find(
+                  (wc) => wc.isoCode.toUpperCase() === (c.isoCode || '').toUpperCase() || wc.name.toLowerCase() === c.name.toLowerCase()
+                );
+                const flag = c.flag || matched?.flag || '🌐';
+                return (
+                  <option key={c._id} value={c.isoCode.toLowerCase()}>
+                    {flag} {c.name} {c.propertyCount > 0 ? `(${c.propertyCount})` : ''}
+                  </option>
+                );
+              })}
+            </select>
+
+            {/* Property Type Selector (Dynamic from Admin) */}
+            <select
+              value={propertyType}
+              onChange={(e) => {
+                setPropertyType(e.target.value);
+                applyFilters({ propertyType: e.target.value });
+              }}
+              className="px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100/70 focus:outline-none focus:ring-2 focus:ring-[#004274] transition cursor-pointer font-medium"
+            >
+              <option value="">Property Type ({propertyTypes.length})</option>
+              {propertyTypes.map((t) => (
+                <option key={t._id} value={t.slug || t._id}>
+                  {t.name} {t.propertyCount > 0 ? `(${t.propertyCount})` : ''}
+                </option>
+              ))}
+            </select>
+
+            {/* Price Filter */}
+            <select
+              value={maxPrice}
+              onChange={(e) => {
+                setMaxPrice(e.target.value);
+                applyFilters({ maxPrice: e.target.value });
+              }}
+              className="px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100/70 focus:outline-none focus:ring-2 focus:ring-[#004274] transition cursor-pointer"
+            >
+              <option value="">Any Price</option>
+              <option value="500000">Up to €500,000</option>
+              <option value="1000000">Up to €1,000,000</option>
+              <option value="2500000">Up to €2,500,000</option>
+              <option value="5000000">Up to €5,000,000</option>
+              <option value="10000000">Up to €10,000,000</option>
+            </select>
+
+            {/* Reset Button */}
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              title="Reset all filters"
+              className="p-1.5 text-slate-500 hover:text-slate-800 rounded-full hover:bg-slate-100 transition border border-slate-200"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* View Mode Switcher */}
+          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-full border border-slate-200 text-xs font-semibold text-slate-600">
+            <button
+              type="button"
+              onClick={() => setViewMode('split')}
+              className={`flex items-center space-x-1 px-3 py-1 rounded-full transition ${
+                viewMode === 'split'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'hover:text-slate-900'
+              }`}
+            >
+              <Columns className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Split View</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`flex items-center space-x-1 px-3 py-1 rounded-full transition ${
+                viewMode === 'grid'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'hover:text-slate-900'
+              }`}
+            >
+              <Grid className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Grid</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode('map')}
+              className={`flex items-center space-x-1 px-3 py-1 rounded-full transition ${
+                viewMode === 'map'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'hover:text-slate-900'
+              }`}
+            >
+              <MapIcon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Map Only</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Location Discovery Pills */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+            Top Locations:
+          </span>
+          {['Dublin', 'London', 'Dubai', 'Cork', 'Galway'].map((loc) => {
+            const isSelected = search.toLowerCase() === loc.toLowerCase() || city.toLowerCase() === loc.toLowerCase();
+            return (
               <button
+                key={loc}
                 type="button"
-                onClick={applyFilters}
-                className="w-1/2 py-2 bg-[#004274] text-xs font-semibold rounded text-white"
+                onClick={() => {
+                  const nextVal = isSelected ? '' : loc;
+                  setSearch(nextVal);
+                  setCity(nextVal);
+                  applyFilters({ search: nextVal, city: nextVal });
+                }}
+                className={`text-xs px-2.5 py-0.5 rounded-full font-medium transition whitespace-nowrap ${
+                  isSelected
+                    ? 'bg-slate-900 text-white font-semibold'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
               >
-                Apply
+                {loc}
               </button>
+            );
+          })}
+        </div>
+      </header>
+
+      {/* Main Content Body */}
+      {viewMode === 'split' ? (
+        /* 1. Split View Mode (Matching Screenshot 1: Left Cards, Right Interactive Map) */
+        <div className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-4.25rem)] overflow-hidden">
+          {/* Left Column: Property Cards Feed */}
+          <div className="w-full lg:w-[480px] xl:w-[540px] flex flex-col h-full bg-white border-r border-slate-200">
+            {/* Results Count & Sort Header */}
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <span className="text-sm font-bold text-slate-900">
+                  {isLoading ? 'Searching properties...' : `${pagination?.total || properties.length} results`}
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-1.5 text-xs text-slate-500">
+                <span>Sort:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => {
+                    setSortBy(e.target.value as any);
+                    applyFilters({ sortBy: e.target.value });
+                  }}
+                  className="font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer"
+                >
+                  <option value="newest">Recommended</option>
+                  <option value="price_asc">Price: Low to High</option>
+                  <option value="price_desc">Price: High to Low</option>
+                  <option value="popular">Most Popular</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Scrollable Property Cards List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-slate-100 h-64 rounded-2xl animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : properties.length === 0 ? (
+                <div className="p-12 text-center text-slate-500">
+                  <p className="font-bold text-base text-slate-700 mb-1">No properties in this view</p>
+                  <p className="text-xs mb-4">Try zooming out or moving the map to explore adjacent regions.</p>
+                  <button
+                    onClick={handleResetFilters}
+                    className="px-4 py-2 bg-[#004274] text-white text-xs font-bold rounded-lg hover:bg-[#003156] transition"
+                  >
+                    Reset Search
+                  </button>
+                </div>
+              ) : (
+                properties.map((property) => {
+                  const isHovered = hoveredPropertyId === property._id;
+                  const isSelected = selectedPropertyId === property._id;
+                  const countryIso = property.country?.isoCode?.toLowerCase() || 'global';
+                  const citySlug = (property.city || 'all').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                  const propertyUrl = `/properties/${countryIso}/${citySlug}/${property.slug}`;
+
+                  return (
+                    <div
+                      key={property._id}
+                      onMouseEnter={() => setHoveredPropertyId(property._id)}
+                      onMouseLeave={() => setHoveredPropertyId(null)}
+                      onClick={() => setSelectedPropertyId(property._id)}
+                      className={`group rounded-2xl border transition-all duration-200 overflow-hidden cursor-pointer ${
+                        isHovered || isSelected
+                          ? 'border-slate-900 shadow-lg ring-1 ring-slate-900'
+                          : 'border-slate-200 hover:border-slate-300 shadow-xs'
+                      }`}
+                    >
+                      {/* Image Thumbnail */}
+                      <Link to={propertyUrl} className="block relative h-56 bg-slate-100 overflow-hidden">
+                        <img
+                          src={
+                            property.coverImage ||
+                            'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'
+                          }
+                          alt={property.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        {property.isFeatured && (
+                          <span className="absolute top-3 left-3 bg-[#004274] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                            Featured
+                          </span>
+                        )}
+                        <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black text-slate-900 shadow-md">
+                          {property.currency?.symbol || '€'}
+                          {(property.price || 0).toLocaleString()}
+                          {property.listingType?.slug?.includes('rent') || property.listingType?.slug === 'short-let'
+                            ? ' / night'
+                            : ''}
+                        </div>
+                      </Link>
+
+                      {/* Content */}
+                      <div className="p-4 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <Link to={propertyUrl} className="flex-1">
+                            <h3 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-[#004274] transition">
+                              {property.title}
+                            </h3>
+                          </Link>
+                          <div className="flex items-center text-xs font-bold text-slate-800 ml-2">
+                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 mr-1" />
+                            <span>{property.rating || '4.9'}</span>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-slate-500 flex items-center truncate">
+                          <MapPin className="w-3.5 h-3.5 mr-1 text-slate-400 shrink-0" />
+                          <span>
+                            {property.area ? `${property.area}, ` : ''}
+                            {property.city || property.country?.name}
+                          </span>
+                        </p>
+
+                        <div className="flex items-center space-x-4 text-xs text-slate-600 pt-1">
+                          {property.bedrooms !== undefined && (
+                            <span className="flex items-center space-x-1">
+                              <Bed className="w-3.5 h-3.5 text-slate-400" />
+                              <span>{property.bedrooms} beds</span>
+                            </span>
+                          )}
+                          {property.bathrooms !== undefined && (
+                            <span className="flex items-center space-x-1">
+                              <Bath className="w-3.5 h-3.5 text-slate-400" />
+                              <span>{property.bathrooms} baths</span>
+                            </span>
+                          )}
+                          {property.livingArea && (
+                            <span className="flex items-center space-x-1">
+                              <Square className="w-3.5 h-3.5 text-slate-400" />
+                              <span>{property.livingArea} m²</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+
+              {/* Left Pagination */}
+              {pagination && pagination.totalPages > 1 && (
+                <div className="pt-4 flex items-center justify-between border-t border-slate-100 text-xs">
+                  <span className="text-slate-500">
+                    Page {pagination.page} of {pagination.totalPages}
+                  </span>
+                  <div className="flex space-x-1">
+                    <button
+                      disabled={!pagination.hasPrev}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className="px-2.5 py-1 border rounded text-slate-700 disabled:opacity-30"
+                    >
+                      Prev
+                    </button>
+                    <button
+                      disabled={!pagination.hasNext}
+                      onClick={() => setPage((p) => p + 1)}
+                      className="px-2.5 py-1 border rounded text-slate-700 disabled:opacity-30"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Right Column: Interactive Real Leaflet Map */}
+          <div className="flex-1 h-full relative">
+            <PropertyMap
+              properties={properties}
+              hoveredPropertyId={hoveredPropertyId}
+              selectedPropertyId={selectedPropertyId}
+              onPropertyHover={setHoveredPropertyId}
+              onPropertySelect={setSelectedPropertyId}
+              onBoundsChange={handleBoundsChange}
+              searchAsMapMoves={searchAsMapMoves}
+              onToggleSearchAsMapMoves={setSearchAsMapMoves}
+              className="h-full rounded-none border-0"
+            />
+          </div>
+        </div>
+      ) : viewMode === 'grid' ? (
+        /* 2. Grid View Mode */
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-slate-900">
+              {pagination?.total || properties.length} Properties Available
+            </h2>
+            <div className="flex items-center space-x-2 text-xs">
+              <span>Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value as any);
+                  applyFilters({ sortBy: e.target.value });
+                }}
+                className="font-bold text-slate-800 bg-transparent focus:outline-none"
+              >
+                <option value="newest">Newest</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="popular">Popular</option>
+              </select>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-slate-100 h-80 rounded-2xl animate-pulse" />
+              ))}
+            </div>
+          ) : properties.length === 0 ? (
+            <div className="p-16 text-center bg-white rounded-2xl border border-slate-200">
+              <p className="text-slate-800 font-bold mb-2">No properties matched your criteria</p>
+              <button
+                onClick={handleResetFilters}
+                className="px-4 py-2 bg-[#004274] text-white rounded-lg text-xs font-bold"
+              >
+                Reset Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {properties.map((prop) => (
+                <PropertyCard key={prop._id} property={prop} />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* 3. Map Only View Mode */
+        <div className="flex-1 h-[calc(100vh-4.25rem)] relative">
+          <PropertyMap
+            properties={properties}
+            hoveredPropertyId={hoveredPropertyId}
+            selectedPropertyId={selectedPropertyId}
+            onPropertyHover={setHoveredPropertyId}
+            onPropertySelect={setSelectedPropertyId}
+            onBoundsChange={handleBoundsChange}
+            searchAsMapMoves={searchAsMapMoves}
+            onToggleSearchAsMapMoves={setSearchAsMapMoves}
+            className="h-full rounded-none border-0"
+          />
         </div>
       )}
     </div>

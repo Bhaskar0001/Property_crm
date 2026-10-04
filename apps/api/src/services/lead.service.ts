@@ -13,6 +13,7 @@ export interface LeadQueryParams {
   stage?: string;
   source?: string;
   priority?: string;
+  country?: string;
   assignedTo?: string;
   page?: number;
   limit?: number;
@@ -36,6 +37,22 @@ export class LeadService {
 
     if (params.assignedTo) {
       filter.assignedTo = params.assignedTo;
+    }
+
+    if (params.country) {
+      const [propsInCountry, custsInCountry] = await Promise.all([
+        PropertyModel.find({ country: params.country }).select('_id'),
+        CustomerModel.find({ country: params.country }).select('_id'),
+      ]);
+      const matchedPropIds = propsInCountry.map((p) => p._id);
+      const matchedCustIds = custsInCountry.map((c) => c._id);
+      filter.$and = filter.$and || [];
+      filter.$and.push({
+        $or: [
+          { property: { $in: matchedPropIds } },
+          { customer: { $in: matchedCustIds } },
+        ],
+      });
     }
 
     // Territory / scope gating for staff members

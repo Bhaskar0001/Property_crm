@@ -13,6 +13,8 @@ export interface IOffer extends Document {
   buyerPhone?: string;
   notes?: string;
   conditions?: string;
+  purchasingPosition?: string;
+  completionTimeline?: string;
   counterAmount?: number;
   respondedAt?: Date;
   respondedBy?: mongoose.Types.ObjectId;
@@ -51,6 +53,8 @@ const schema = new Schema<IOffer>(
     buyerPhone: { type: String },
     notes: { type: String },
     conditions: { type: String },
+    purchasingPosition: { type: String },
+    completionTimeline: { type: String },
     counterAmount: { type: Number },
     respondedAt: { type: Date },
     respondedBy: { type: Schema.Types.ObjectId, ref: 'User' },

@@ -11,7 +11,9 @@ import {
   useCurrencies,
 } from '../../hooks/useAdminConfig';
 import { useGeneratePropertyDescription } from '../../hooks/useAI';
+import { PropertyMapPicker } from '../../components/property/PropertyMapPicker';
 import { ArrowLeft, Check, Save, Sparkles } from 'lucide-react';
+import { CountryFlag } from '../../components/common/CountryFlag';
 
 const STEPS = [
   'Identity & Location',
@@ -77,6 +79,10 @@ export function PropertyFormPage() {
     features: [] as string[],
     shortDescription: '',
     description: '',
+    videoUrl: '',
+    virtualTourUrl: '',
+    floorPlanUrl: '',
+    brochureUrl: '',
     seoTitle: '',
     metaDescription: '',
     isPublished: false,
@@ -126,6 +132,10 @@ export function PropertyFormPage() {
         features: (property.features || []).map((f: any) => f._id || f),
         shortDescription: property.shortDescription || '',
         description: property.description || '',
+        videoUrl: property.videoUrl || '',
+        virtualTourUrl: property.virtualTourUrl || '',
+        floorPlanUrl: property.floorPlanUrl || '',
+        brochureUrl: property.brochureUrl || '',
         seoTitle: property.seoTitle || '',
         metaDescription: property.metaDescription || '',
         isPublished: property.isPublished || false,
@@ -258,7 +268,7 @@ export function PropertyFormPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Luxury 3-Bed Penthouse overlooking Grand Canal"
+                  placeholder="e.g. Contemporary Oceanfront Residence"
                   value={formData.title}
                   onChange={(e) => handleChange('title', e.target.value)}
                   className="w-full text-sm border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#004274] focus:outline-none"
@@ -289,6 +299,33 @@ export function PropertyFormPage() {
                     <option key={c._id} value={c._id}>{c.name} ({c.isoCode})</option>
                   ))}
                 </select>
+                {(() => {
+                  const sel = (countries || []).find((c: any) => c._id === formData.country);
+                  if (!sel) return null;
+                  return (
+                    <div className="mt-2 flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <CountryFlag code={sel.isoCode} name={sel.name} flagUrl={sel.flagUrl} size="sm" />
+                        <span className="text-xs font-bold text-gray-800">{sel.name}</span>
+                        <span className="text-[10px] font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-bold">
+                          {sel.isoCode}
+                        </span>
+                      </div>
+                      {sel.imageUrl && (
+                        <div className="w-10 h-7 rounded overflow-hidden border border-slate-200 shrink-0">
+                          <img
+                            src={sel.imageUrl}
+                            alt={sel.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               <div>
@@ -317,7 +354,7 @@ export function PropertyFormPage() {
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Area / Neighborhood</label>
                 <input
                   type="text"
-                  placeholder="e.g. Grand Canal Dock"
+                  placeholder="e.g. Waterfront Marina District"
                   value={formData.area}
                   onChange={(e) => handleChange('area', e.target.value)}
                   className="w-full text-sm border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#004274] focus:outline-none"
@@ -328,7 +365,7 @@ export function PropertyFormPage() {
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Full Street Address</label>
                 <input
                   type="text"
-                  placeholder="e.g. 14 Hanover Quay, Grand Canal Dock"
+                  placeholder="e.g. 100 Promenade Way, Suite 12"
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
                   className="w-full text-sm border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#004274] focus:outline-none"
@@ -369,6 +406,20 @@ export function PropertyFormPage() {
                     className="w-full text-sm border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#004274] focus:outline-none"
                   />
                 </div>
+              </div>
+
+              {/* Interactive Visual Map Location Picker */}
+              <div className="pt-2">
+                <PropertyMapPicker
+                  latitude={formData.latitude}
+                  longitude={formData.longitude}
+                  city={formData.city}
+                  address={formData.address}
+                  onChange={({ latitude, longitude }) => {
+                    handleChange('latitude', latitude);
+                    handleChange('longitude', longitude);
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -695,7 +746,7 @@ export function PropertyFormPage() {
                 className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-primary to-blue-600 hover:from-primary-dark hover:to-blue-700 text-white rounded-md text-xs font-semibold shadow-xs disabled:opacity-50 transition"
               >
                 <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-300" />
-                {generateDescMutation.isPending ? 'Generating Copy...' : 'Generate with AI'}
+                {generateDescMutation.isPending ? 'Crafting Description...' : 'Auto-Generate Description'}
               </button>
             </div>
             <div>
@@ -741,6 +792,72 @@ export function PropertyFormPage() {
                   onChange={(e) => handleChange('metaDescription', e.target.value)}
                   className="w-full text-sm border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#004274] focus:outline-none"
                 />
+              </div>
+            </div>
+
+            {/* Media & Interactive Tours Section */}
+            <div className="border-t border-gray-200 pt-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-gray-900">Video Tours, 3D Walkthrough & PDFs</h4>
+                  <p className="text-xs text-gray-500">Provide direct stream URLs or upload files in the Media Studio.</p>
+                </div>
+                {isEdit && (
+                  <Link
+                    to={`/properties/${id}/media`}
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition"
+                  >
+                    <span>Open Full Media Studio</span>
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </Link>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Video Tour Stream / Embed URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://www.youtube.com/watch?v=... or direct MP4 link"
+                    value={formData.videoUrl}
+                    onChange={(e) => handleChange('videoUrl', e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#004274] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">3D Virtual Walkthrough URL (Matterport / Kuula)</label>
+                  <input
+                    type="url"
+                    placeholder="https://my.matterport.com/show/..."
+                    value={formData.virtualTourUrl}
+                    onChange={(e) => handleChange('virtualTourUrl', e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#004274] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Architectural Floor Plan URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://... or attach in Media Studio"
+                    value={formData.floorPlanUrl}
+                    onChange={(e) => handleChange('floorPlanUrl', e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#004274] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Brochure PDF Download URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://... or upload in Media Studio"
+                    value={formData.brochureUrl}
+                    onChange={(e) => handleChange('brochureUrl', e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#004274] focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
           </div>

@@ -51,6 +51,10 @@ export interface IProperty extends Document {
   // Media & Assets
   imageCount: number;
   coverImage?: string;
+  videoUrl?: string;
+  virtualTourUrl?: string;
+  floorPlanUrl?: string;
+  brochureUrl?: string;
 
   // Publication & Display Controls
   isPublished: boolean;
@@ -128,6 +132,10 @@ const schema = new Schema<IProperty>(
 
     imageCount: { type: Number, default: 0 },
     coverImage: { type: String },
+    videoUrl: { type: String, trim: true },
+    virtualTourUrl: { type: String, trim: true },
+    floorPlanUrl: { type: String, trim: true },
+    brochureUrl: { type: String, trim: true },
 
     isPublished: { type: Boolean, default: false, index: true },
     isFeatured: { type: Boolean, default: false, index: true },

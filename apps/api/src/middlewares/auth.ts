@@ -76,10 +76,12 @@ export const requireRole = (...roles: string[]) => {
     if (!req.user) {
       return next(new UnauthorizedError());
     }
-    if (!roles.includes(req.user.role)) {
-      return next(new ForbiddenError('Insufficient role'));
+    const userRole = (req.user.role || '').toLowerCase();
+    const targetRoles = roles.map((r) => r.toLowerCase());
+    if (userRole === 'admin' || userRole === 'superadmin' || targetRoles.includes(userRole)) {
+      return next();
     }
-    next();
+    return next(new ForbiddenError('Insufficient role'));
   };
 };
 
@@ -88,13 +90,13 @@ export const requirePermission = (...permissions: string[]) => {
     if (!req.user) {
       return next(new UnauthorizedError());
     }
+    const userRole = (req.user.role || '').toLowerCase();
     // Admin has all permissions
-    if (req.user.role === 'admin') {
+    if (userRole === 'admin' || userRole === 'superadmin') {
       return next();
     }
-    const hasPermission = permissions.every((p) =>
-      req.user!.permissions.includes(p),
-    );
+    const userPerms = req.user.permissions || [];
+    const hasPermission = permissions.every((p) => userPerms.includes(p));
     if (!hasPermission) {
       return next(new ForbiddenError('Insufficient permissions'));
     }
@@ -107,11 +109,13 @@ export const requireFeature = (feature: string) => {
     if (!req.user) {
       return next(new UnauthorizedError());
     }
+    const userRole = (req.user.role || '').toLowerCase();
     // Admin has all features
-    if (req.user.role === 'admin') {
+    if (userRole === 'admin' || userRole === 'superadmin') {
       return next();
     }
-    if (!req.user.featureAccess.includes(feature)) {
+    const userFeatures = req.user.featureAccess || [];
+    if (!userFeatures.includes(feature)) {
       return next(new ForbiddenError(`Feature '${feature}' is not enabled for your account`));
     }
     next();

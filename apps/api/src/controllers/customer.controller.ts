@@ -128,11 +128,24 @@ export class CustomerController {
     }
   }
 
+  // Get customer offers
+  async getOffers(req: CustomerAuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.customer?.customerId) {
+        throw new UnauthorizedError('Customer not authenticated');
+      }
+      const offers = await customerService.getOffers(req.customer.customerId);
+      res.status(200).json({ success: true, data: offers });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // Create an enquiry or viewing request (public or authenticated)
   async createEnquiry(req: CustomerAuthRequest, res: Response, next: NextFunction) {
     try {
       const customerId = req.customer?.customerId;
-      const { name, email, phone, propertyId, type, scheduledDate, scheduledTime, notes } = req.body;
+      const { name, email, phone, propertyId, type, visitType, virtualPlatform, scheduledDate, scheduledTime, notes } = req.body;
 
       const result = await customerService.createEnquiry({
         customerId,
@@ -141,6 +154,8 @@ export class CustomerController {
         phone,
         propertyId,
         type,
+        visitType,
+        virtualPlatform,
         scheduledDate,
         scheduledTime,
         notes,

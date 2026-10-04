@@ -16,6 +16,8 @@ import {
   UserX,
   Phone,
   Mail,
+  Video,
+  Home,
 } from 'lucide-react';
 import {
   useViewings,
@@ -51,6 +53,8 @@ export function ViewingListPage() {
     customerName: '',
     customerEmail: '',
     customerPhone: '',
+    visitType: 'in_person' as 'in_person' | 'virtual',
+    virtualPlatform: 'whatsapp_video',
     scheduledDate: '',
     scheduledTime: '11:00',
     duration: 30,
@@ -133,6 +137,23 @@ export function ViewingListPage() {
           </span>
         );
     }
+  };
+
+  const getVisitTypeBadge = (visitType?: string, platform?: string) => {
+    if (visitType === 'virtual') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+          <Video className="w-3.5 h-3.5 mr-1 text-indigo-600" />
+          Virtual ({platform ? platform.replace('_', ' ') : 'Live Video'})
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+        <Home className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+        Physical Visit
+      </span>
+    );
   };
 
   const handleConfirm = (viewing: Viewing) => {
@@ -220,6 +241,8 @@ export function ViewingListPage() {
           customerName: '',
           customerEmail: '',
           customerPhone: '',
+          visitType: 'in_person' as 'in_person' | 'virtual',
+          virtualPlatform: 'whatsapp_video',
           scheduledDate: '',
           scheduledTime: '11:00',
           duration: 30,
@@ -344,6 +367,9 @@ export function ViewingListPage() {
                     Client Details
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Format
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Date & Time
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -406,6 +432,11 @@ export function ViewingListPage() {
                           </p>
                         )}
                       </div>
+                    </td>
+
+                    {/* Format */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getVisitTypeBadge(viewing.visitType, viewing.virtualPlatform)}
                     </td>
 
                     {/* Date & Time */}
@@ -621,6 +652,54 @@ export function ViewingListPage() {
                   </select>
                 </div>
               </div>
+
+              {/* Visit Format */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Visit Format *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBookForm({ ...bookForm, visitType: 'in_person' })}
+                    className={`p-2.5 rounded-lg border text-left flex items-center space-x-2 text-xs font-semibold transition ${
+                      bookForm.visitType === 'in_person'
+                        ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Home className="w-4 h-4 shrink-0" />
+                    <span>Physical Visit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBookForm({ ...bookForm, visitType: 'virtual' })}
+                    className={`p-2.5 rounded-lg border text-left flex items-center space-x-2 text-xs font-semibold transition ${
+                      bookForm.visitType === 'virtual'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Video className="w-4 h-4 shrink-0 text-indigo-600" />
+                    <span>Virtual Video Tour</span>
+                  </button>
+                </div>
+              </div>
+
+              {bookForm.visitType === 'virtual' && (
+                <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                  <label className="block text-xs font-semibold text-indigo-900 mb-1">Video Platform</label>
+                  <select
+                    value={bookForm.virtualPlatform}
+                    onChange={(e) => setBookForm({ ...bookForm, virtualPlatform: e.target.value })}
+                    className="w-full text-sm border border-indigo-200 rounded-md p-2 bg-white"
+                  >
+                    <option value="whatsapp_video">WhatsApp Video Call</option>
+                    <option value="zoom">Zoom</option>
+                    <option value="google_meet">Google Meet</option>
+                    <option value="facetime">FaceTime</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Notes / Instructions</label>

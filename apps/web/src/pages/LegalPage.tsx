@@ -61,7 +61,7 @@ export function LegalPage() {
               <div className="space-y-4">
                 <h2 className="text-base font-bold text-slate-900">1. Data Controller Overview</h2>
                 <p>
-                  PropertyOS Real Estate Advisory Group (&quot;PropertyOS&quot;, &quot;we&quot;, &quot;our&quot;) is committed to protecting the privacy and confidentiality of personal data entrusted to us by clients, applicants, vendors, and website visitors.
+                  EstateElite Real Estate Advisory Group (&quot;EstateElite&quot;, &quot;we&quot;, &quot;our&quot;) is committed to protecting the privacy and confidentiality of personal data entrusted to us by clients, applicants, vendors, and website visitors.
                 </p>
 
                 <h2 className="text-base font-bold text-slate-900">2. Personal Information Collected</h2>
@@ -82,7 +82,7 @@ export function LegalPage() {
                 </ul>
 
                 <h2 className="text-base font-bold text-slate-900">4. Your Rights Under GDPR</h2>
-                <p>You have the absolute right to request access to your personal data, request correction of inaccurate records, request erasure where statutory retention obligations have elapsed, and object to direct communications at any time by contacting <a href="mailto:privacy@propertyos.com" className="text-[#004274] font-semibold underline">privacy@propertyos.com</a>.</p>
+                <p>You have the absolute right to request access to your personal data, request correction of inaccurate records, request erasure where statutory retention obligations have elapsed, and object to direct communications at any time by contacting <a href="mailto:privacy@estateelite.com" className="text-[#004274] font-semibold underline">privacy@estateelite.com</a>.</p>
               </div>
             </>
           )}
@@ -97,7 +97,7 @@ export function LegalPage() {
               <div className="space-y-4">
                 <h2 className="text-base font-bold text-slate-900">1. Nature of Services</h2>
                 <p>
-                  PropertyOS provides real estate marketing, client representation, property acquisitions, and asset management advisory. All particulars, brochures, floor plans, virtual tours, and dimensions published on this platform are produced for guidance only and do not constitute an offer, warranty, or contractual representation.
+                  EstateElite provides real estate marketing, client representation, property acquisitions, and asset management advisory. All particulars, brochures, floor plans, virtual tours, and dimensions published on this platform are produced for guidance only and do not constitute an offer, warranty, or contractual representation.
                 </p>
 
                 <h2 className="text-base font-bold text-slate-900">2. Accuracy of Particulars & Due Diligence</h2>
@@ -107,12 +107,12 @@ export function LegalPage() {
 
                 <h2 className="text-base font-bold text-slate-900">3. Anti-Money Laundering (AML) Requirements</h2>
                 <p>
-                  In compliance with statutory AML regulations, PropertyOS requires verified photographic identification, verified proof of address dated within three months, and documented proof of funds prior to finalising any sales agreed or tenancy contracts.
+                  In compliance with statutory AML regulations, EstateElite requires verified photographic identification, verified proof of address dated within three months, and documented proof of funds prior to finalising any sales agreed or tenancy contracts.
                 </p>
 
                 <h2 className="text-base font-bold text-slate-900">4. Offer Submissions & Reservation Deposits</h2>
                 <p>
-                  Offers recorded through the PropertyOS digital platform are submitted subject to contract, title verification, and vacant possession unless expressly stated otherwise in writing.
+                  Offers recorded through the EstateElite digital platform are submitted subject to contract, title verification, and vacant possession unless expressly stated otherwise in writing.
                 </p>
               </div>
             </>
@@ -129,7 +129,7 @@ export function LegalPage() {
                 <div className="bg-blue-50/60 border border-blue-200 rounded-lg p-4">
                   <h3 className="font-bold text-[#004274] mb-1">Licensed Property Services Provider</h3>
                   <p className="text-xs text-slate-700">
-                    PropertyOS Real Estate Ltd operates as an authorized and fully licensed estate agency under the Property Services (Regulation) Act 2011.
+                    EstateElite Real Estate Ltd operates as an authorized and fully licensed estate agency under the Property Services (Regulation) Act 2011.
                   </p>
                 </div>
 
@@ -143,7 +143,7 @@ export function LegalPage() {
 
                 <h2 className="text-base font-bold text-slate-900">Professional Indemnity & Client Escrow</h2>
                 <p>
-                  PropertyOS maintains comprehensive Professional Indemnity Insurance in accordance with statutory minimum requirements. All client reservation deposits and tenant funds are held in strictly audited, segregated Client Accounts at regulated Tier-1 banking institutions.
+                  EstateElite maintains comprehensive Professional Indemnity Insurance in accordance with statutory minimum requirements. All client reservation deposits and tenant funds are held in strictly audited, segregated Client Accounts at regulated Tier-1 banking institutions.
                 </p>
 
                 <h2 className="text-base font-bold text-slate-900">Dispute Resolution & Redress</h2>

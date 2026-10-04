@@ -64,6 +64,28 @@ export class PropertyController {
       next(error);
     }
   }
+
+  async exportProperties(req: Request, res: Response, next: NextFunction) {
+    try {
+      const csv = await propertyService.exportProperties(req.query as any, (req as any).user);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="properties-export.csv"');
+      res.status(200).send(csv);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async importProperties(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { importService } = await import('../services/import.service');
+      const rows = req.body.rows || req.body;
+      const result = await importService.importProperties(rows, (req as any).user);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const propertyController = new PropertyController();

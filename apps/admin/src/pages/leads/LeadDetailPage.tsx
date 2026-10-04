@@ -99,9 +99,9 @@ export function LeadDetailPage() {
   const whatsappNumber = lead.customer?.phone?.replace(/\D/g, '');
   const whatsappUrl = whatsappNumber
     ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-        `Hello ${lead.customer?.name || ''}, this is regarding your inquiry with PropertyOS.`
+        `Hello ${lead.customer?.name || ''}, this is regarding your inquiry with EstateElite.`
       )}`
-    : `https://wa.me/?text=${encodeURIComponent(`Hello ${lead.customer?.name || ''}, this is PropertyOS.`)}`;
+    : `https://wa.me/?text=${encodeURIComponent(`Hello ${lead.customer?.name || ''}, this is EstateElite.`)}`;
 
   return (
     <div className="space-y-6">
@@ -356,7 +356,7 @@ export function LeadDetailPage() {
                       </span>
                       <a
                         href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-                          `Hello, we have matched a property to your requirements: ${prop.title} - ${window.location.origin}/properties/${prop.slug}`
+                          `Hello, we have matched a property to your requirements: ${prop.title} - http://localhost:3000/properties/${prop.slug}`
                         )}`}
                         target="_blank"
                         rel="noreferrer"

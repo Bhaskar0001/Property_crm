@@ -11,5 +11,4 @@ const schema = new Schema<ICustomer>({
   isActive: { type: Boolean, default: true },
   lastLoginAt: { type: Date }
 }, { timestamps: true });
-schema.index({ email: 1 });
 export const CustomerModel = mongoose.model<ICustomer>('Customer', schema);

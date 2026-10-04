@@ -16,4 +16,5 @@ staffRouter.put('/:id', validate(updateStaffSchema), staffController.update);
 staffRouter.put('/:id/permissions', validate(updatePermissionsSchema), staffController.updatePermissions);
 staffRouter.patch('/:id/activate', staffController.activate);
 staffRouter.patch('/:id/deactivate', staffController.deactivate);
+staffRouter.patch('/:id/active', staffController.toggleActive);
 staffRouter.post('/:id/reset-password', validate(resetPasswordSchema), staffController.resetPassword);

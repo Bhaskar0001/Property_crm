@@ -113,6 +113,7 @@ export interface LeadQueryParams {
   stage?: string;
   source?: string;
   priority?: string;
+  country?: string;
   assignedTo?: string;
   page?: number;
   limit?: number;

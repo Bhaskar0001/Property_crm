@@ -21,6 +21,20 @@ router.get(
 );
 
 router.get(
+  '/export',
+  authenticate,
+  requirePermission('properties.view'),
+  propertyController.exportProperties.bind(propertyController)
+);
+
+router.post(
+  '/import',
+  authenticate,
+  requirePermission('properties.create'),
+  propertyController.importProperties.bind(propertyController)
+);
+
+router.get(
   '/:id', 
   authenticate,
   requirePermission('properties.view'),

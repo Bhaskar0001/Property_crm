@@ -1,14 +1,15 @@
 import { Link } from 'react-router-dom';
 import { Bed, Bath, Maximize2, MapPin, MessageSquare, Zap, Heart } from 'lucide-react';
 import { PublicProperty } from '../../types';
-import { formatCurrency } from '../../lib/utils';
 import { useFavorites, useToggleFavorite } from '../../hooks/useCustomerData';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface PropertyCardProps {
   property: PublicProperty;
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
+  const { formatPrice } = useCurrency();
   const { data: favorites = [] } = useFavorites();
   const toggleFavorite = useToggleFavorite();
   const isFavorited = favorites.some((fav) => fav._id === property._id);
@@ -17,7 +18,6 @@ export function PropertyCard({ property }: PropertyCardProps) {
     'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80';
 
   const coverUrl = property.coverImage || fallbackImage;
-  const currencyCode = property.currency?.code || 'EUR';
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -78,6 +78,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
               {property.status.name}
             </span>
           )}
+
           <button
             type="button"
             onClick={handleFavoriteClick}
@@ -95,9 +96,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         {/* Price Tag overlay */}
         <div className="absolute bottom-3 left-3 bg-[#002544]/90 backdrop-blur-sm px-3 py-1.5 rounded text-white shadow-md">
           <span className="text-base font-bold tracking-tight">
-            {property.priceOnRequest
-              ? 'Price on Request'
-              : formatCurrency(property.price, currencyCode)}
+            {formatPrice(property.price)}
           </span>
         </div>
       </div>

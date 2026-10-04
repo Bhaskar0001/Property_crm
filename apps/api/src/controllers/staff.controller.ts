@@ -145,6 +145,30 @@ export const staffController = {
     }
   },
 
+  async toggleActive(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const active = req.body.active !== undefined ? req.body.active : true;
+      const staff = active
+        ? await staffService.activate(req.params.id)
+        : await staffService.deactivate(req.params.id);
+
+      if (req.user) {
+        await auditService.log({
+          userId: req.user._id,
+          userName: req.user.name,
+          action: active ? 'activate' : 'deactivate',
+          entity: 'User',
+          entityId: staff._id.toString(),
+          ip: req.ip,
+        });
+      }
+
+      sendSuccess(res, staff, `Staff member ${active ? 'activated' : 'deactivated'} successfully`);
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async resetPassword(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const staff = await staffService.resetPassword(req.params.id, req.body.newPassword);

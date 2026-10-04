@@ -1,5 +1,7 @@
 import { PropertyModel } from '../models/Property';
 import { PropertyQueryParams } from '../validators/property.validator';
+import { resolveCoordinates } from '../utils/geocoder';
+import { getIO } from '../config/socket';
 
 const slugify = (text: string) =>
   text
@@ -32,13 +34,33 @@ export class PropertyService {
   async create(data: any, userId: string) {
     const slug = await this.generateUniqueSlug(data.title);
     
+    // Auto-resolve coordinates if missing or zero
+    let latitude = data.latitude ? Number(data.latitude) : undefined;
+    let longitude = data.longitude ? Number(data.longitude) : undefined;
+
+    if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+      const coords = resolveCoordinates(data.city, data.country, data.address);
+      latitude = coords.latitude;
+      longitude = coords.longitude;
+    }
+
     const property = new PropertyModel({
       ...data,
+      latitude,
+      longitude,
       slug,
       createdBy: userId
     });
     
-    return await property.save();
+    const saved = await property.save();
+
+    // Emit live update to connected admin and public clients
+    const io = getIO();
+    if (io) {
+      io.emit('property_created', { propertyId: saved._id, slug: saved.slug });
+    }
+
+    return saved;
   }
 
   async update(id: string, data: any, userId: string) {
@@ -49,14 +71,33 @@ export class PropertyService {
         slug = await this.generateUniqueSlug(data.title);
       }
     }
+
+    let latitude = data.latitude !== undefined && data.latitude !== '' ? Number(data.latitude) : undefined;
+    let longitude = data.longitude !== undefined && data.longitude !== '' ? Number(data.longitude) : undefined;
+
+    if ((latitude === undefined || longitude === undefined) && (data.city || data.address)) {
+      const coords = resolveCoordinates(data.city, data.country, data.address);
+      latitude = coords.latitude;
+      longitude = coords.longitude;
+    }
     
-    const updateData = {
+    const updateData: any = {
       ...data,
+      ...(latitude !== undefined && { latitude }),
+      ...(longitude !== undefined && { longitude }),
       ...(slug && { slug }),
       updatedBy: userId
     };
     
-    return await PropertyModel.findByIdAndUpdate(id, updateData, { new: true });
+    const updated = await PropertyModel.findByIdAndUpdate(id, updateData, { new: true });
+
+    // Emit live update
+    const io = getIO();
+    if (io) {
+      io.emit('property_updated', { propertyId: id, slug: updated?.slug });
+    }
+
+    return updated;
   }
 
   async getById(id: string, user?: any) {
@@ -192,6 +233,81 @@ export class PropertyService {
       { isDeleted: true, updatedBy: userId },
       { new: true }
     );
+  }
+
+  async exportProperties(params: Partial<PropertyQueryParams>, user?: any): Promise<string> {
+    const filter: any = { isDeleted: false };
+    if (params.country) filter.country = params.country;
+    if (params.propertyType) filter.propertyType = params.propertyType;
+    if (params.status) filter.status = params.status;
+    if (params.isPublished !== undefined) filter.isPublished = params.isPublished;
+
+    if (user && user.role === 'staff') {
+      const countryAccess = user.countryAccess || [];
+      if (countryAccess.length > 0) filter.country = { $in: countryAccess };
+      if (user.propertyAccessScope?.type === 'assigned') filter.createdBy = user._id;
+    }
+
+    const properties = await PropertyModel.find(filter)
+      .populate('country propertyType listingType status currency')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const headers = [
+      'Internal Reference',
+      'Title',
+      'Slug',
+      'Country',
+      'City',
+      'Area',
+      'Address',
+      'Latitude',
+      'Longitude',
+      'Price',
+      'Currency',
+      'Property Type',
+      'Listing Type',
+      'Status',
+      'Bedrooms',
+      'Bathrooms',
+      'Living Area (sqm)',
+      'Cover Image',
+      'Published',
+      'Featured',
+      'Created At',
+    ];
+
+    const escapeCsv = (val: any) => {
+      if (val === null || val === undefined) return '';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = properties.map((p: any) => [
+      escapeCsv(p.internalReference || ''),
+      escapeCsv(p.title || ''),
+      escapeCsv(p.slug || ''),
+      escapeCsv(p.country?.name || ''),
+      escapeCsv(p.city || ''),
+      escapeCsv(p.area || ''),
+      escapeCsv(p.address || ''),
+      escapeCsv(p.latitude || ''),
+      escapeCsv(p.longitude || ''),
+      escapeCsv(p.price || 0),
+      escapeCsv(p.currency?.code || 'EUR'),
+      escapeCsv(p.propertyType?.name || ''),
+      escapeCsv(p.listingType?.name || ''),
+      escapeCsv(p.status?.name || ''),
+      escapeCsv(p.bedrooms || ''),
+      escapeCsv(p.bathrooms || ''),
+      escapeCsv(p.livingArea || ''),
+      escapeCsv(p.coverImage || ''),
+      escapeCsv(p.isPublished ? 'Yes' : 'No'),
+      escapeCsv(p.isFeatured ? 'Yes' : 'No'),
+      escapeCsv(p.createdAt ? new Date(p.createdAt).toISOString() : ''),
+    ]);
+
+    return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
   }
 }
 

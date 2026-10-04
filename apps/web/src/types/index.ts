@@ -38,8 +38,14 @@ export interface PublicProperty {
   features?: Array<{ _id: string; name: string; slug: string; icon?: string }>;
   coverImage?: string;
   imageCount?: number;
+  videoUrl?: string;
+  virtualTourUrl?: string;
+  floorPlanUrl?: string;
+  brochureUrl?: string;
   isPublished?: boolean;
   isFeatured?: boolean;
+  rating?: number;
+  reviewsCount?: number;
   viewCount?: number;
   createdAt: string;
   updatedAt: string;
@@ -83,8 +89,11 @@ export interface PublicCountry {
   _id: string;
   name: string;
   isoCode: string;
-  currency?: string;
+  currency?: any;
   phoneCode?: string;
+  flag?: string;
+  flagUrl?: string;
+  imageUrl?: string;
   propertyCount: number;
 }
 
@@ -93,6 +102,13 @@ export interface PublicPropertyType {
   name: string;
   slug: string;
   icon?: string;
+  propertyCount: number;
+}
+
+export interface PublicListingType {
+  _id: string;
+  name: string;
+  slug: string;
   propertyCount: number;
 }
 
@@ -110,6 +126,10 @@ export interface PublicPropertiesFilter {
   berRating?: string;
   isFeatured?: boolean;
   sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'popular';
+  neLat?: number;
+  neLng?: number;
+  swLat?: number;
+  swLng?: number;
   page?: number;
   limit?: number;
 }

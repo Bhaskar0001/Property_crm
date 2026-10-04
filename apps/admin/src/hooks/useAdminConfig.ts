@@ -73,6 +73,17 @@ export const useSetDefaultCurrency = () => {
   });
 };
 
+export const useSyncLiveExchangeRates = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post('/admin/currencies/sync-live-rates'),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['currencies'] }),
+      qc.invalidateQueries({ queryKey: ['public-currencies'] })
+    },
+  });
+};
+
 // --- Property Types ---
 export const usePropertyTypes = () =>
   useQuery({
@@ -353,3 +364,21 @@ export const useResetStaffPassword = () => {
       api.post(`/staff/${id}/reset-password`, data),
   });
 };
+
+// --- Advisory Contact Settings ---
+export const useAdvisoryContact = () =>
+  useQuery({
+    queryKey: ['advisory-contact'],
+    queryFn: () => api.get('/admin/advisory-contact').then(unwrap),
+  });
+
+export const useUpdateAdvisoryContact = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => api.put('/admin/advisory-contact', data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['advisory-contact'] });
+    },
+  });
+};
+

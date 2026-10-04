@@ -2,22 +2,51 @@ import { z } from 'zod';
 
 export const createCountrySchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  isoCode: z.string().min(2).max(4).toUpperCase(),
+  isoCode: z.string().optional(),
+  code: z.string().optional(),
   currency: z.string().optional(),
   timezone: z.string().optional(),
   phoneCode: z.string().optional(),
+  flag: z.string().optional(),
+  flagUrl: z.string().optional(),
+  imageUrl: z.string().optional(),
   isActive: z.boolean().optional(),
-});
-export const updateCountrySchema = createCountrySchema.deepPartial();
+}).transform((data) => ({
+  ...data,
+  isoCode: (data.isoCode || data.code || data.name.substring(0, 3)).toUpperCase().trim(),
+}));
+export const updateCountrySchema = z.object({
+  name: z.string().optional(),
+  isoCode: z.string().optional(),
+  code: z.string().optional(),
+  currency: z.string().optional(),
+  timezone: z.string().optional(),
+  phoneCode: z.string().optional(),
+  flag: z.string().optional(),
+  flagUrl: z.string().optional(),
+  imageUrl: z.string().optional(),
+  isActive: z.boolean().optional(),
+}).transform((data) => ({
+  ...data,
+  ...(data.code && !data.isoCode ? { isoCode: data.code.toUpperCase().trim() } : {}),
+}));
 
 export const createCurrencySchema = z.object({
   code: z.string().min(1).max(5).toUpperCase(),
   symbol: z.string().min(1),
   name: z.string().optional().default('Currency'),
+  exchangeRate: z.union([z.number(), z.string().transform((v) => parseFloat(v) || 1)]).optional().default(1.0),
   isActive: z.boolean().optional(),
   isDefault: z.boolean().optional(),
 });
-export const updateCurrencySchema = createCurrencySchema.deepPartial();
+export const updateCurrencySchema = z.object({
+  code: z.string().min(1).max(5).toUpperCase().optional(),
+  symbol: z.string().min(1).optional(),
+  name: z.string().optional(),
+  exchangeRate: z.union([z.number(), z.string().transform((v) => parseFloat(v) || 1)]).optional(),
+  isActive: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
+});
 
 export const createPropertyTypeSchema = z.object({
   name: z.string().min(1),

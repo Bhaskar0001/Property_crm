@@ -69,6 +69,8 @@ export function useSubmitEnquiry() {
       phone: string;
       propertyId?: string;
       type?: 'viewing' | 'general' | 'valuation';
+      visitType?: 'in_person' | 'virtual';
+      virtualPlatform?: string;
       scheduledDate?: string;
       scheduledTime?: string;
       notes?: string;
@@ -97,3 +99,17 @@ export function useUpdateCustomerProfile() {
     },
   });
 }
+
+export function useCustomerOffers() {
+  const { customer } = useCustomerAuth();
+
+  return useQuery({
+    queryKey: ['customer-offers', customer?._id],
+    queryFn: async (): Promise<any[]> => {
+      const response = await customerApi.get('/offers');
+      return response.data.data;
+    },
+    enabled: !!customer,
+  });
+}
+

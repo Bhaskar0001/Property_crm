@@ -15,11 +15,11 @@ export class EmailService {
 
   async sendOtp(email: string, otp: string, name?: string): Promise<boolean> {
     const greeting = name ? `Hello ${name},` : 'Hello,';
-    const subject = `Your Verification Code: ${otp} — PropertyOS`;
+    const subject = `Your Verification Code: ${otp} — EstateElite`;
     const html = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
         <div style="margin-bottom: 24px;">
-          <h2 style="color: #004274; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">PROPERTY<span style="color: #6fabca;">OS</span></h2>
+          <h2 style="color: #004274; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">ESTATE<span style="color: #6fabca;">ELITE</span></h2>
           <p style="color: #64748b; font-size: 12px; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">Client Portal Access</p>
         </div>
         <p style="color: #334155; font-size: 15px; line-height: 1.6;">${greeting}</p>
@@ -29,7 +29,7 @@ export class EmailService {
         </div>
         <p style="color: #64748b; font-size: 13px; line-height: 1.5;">This code will expire in 10 minutes. If you did not request this login code, you can safely disregard this email.</p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
-        <p style="color: #94a3b8; font-size: 11px; text-align: center;">PropertyOS Advisory Group • Dublin • London • Dubai<br/>Licensed Real Estate Practice</p>
+        <p style="color: #94a3b8; font-size: 11px; text-align: center;">EstateElite Advisory Group • Dublin • London • Dubai<br/>Licensed Real Estate Practice</p>
       </div>
     `;
 
@@ -52,6 +52,10 @@ export class EmailService {
         return false;
       }
     } else {
+      if (config.env === 'production') {
+        logger.error(`Email dispatch failed: RESEND_API_KEY is not configured in production. Cannot send OTP to ${email}`);
+        return false;
+      }
       // Dev log fallback
       logger.info(
         `\n======================================================\n📨 [DEV EMAIL DISPATCH] TO: ${email}\nSUBJECT: ${subject}\nVERIFICATION CODE (OTP): [ ${otp} ]\n======================================================\n`
@@ -71,7 +75,7 @@ export class EmailService {
       notes?: string;
     }
   ): Promise<boolean> {
-    const subject = `Viewing Request: ${details.propertyTitle} — PropertyOS`;
+    const subject = `Viewing Request: ${details.propertyTitle} — EstateElite`;
     const html = `
       <div style="font-family: Arial, sans-serif; padding: 24px; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
         <h3 style="color: #004274;">Viewing Request Received</h3>
@@ -101,6 +105,10 @@ export class EmailService {
         return false;
       }
     } else {
+      if (config.env === 'production') {
+        logger.error('Viewing email dispatch failed: RESEND_API_KEY is not configured in production.');
+        return false;
+      }
       logger.info(`[DEV EMAIL] Viewing notice to ${recipientEmail} for ${details.propertyTitle}`);
       return true;
     }
@@ -149,6 +157,10 @@ export class EmailService {
         return false;
       }
     } else {
+      if (config.env === 'production') {
+        logger.error('Viewing confirmation email failed: RESEND_API_KEY is not configured in production.');
+        return false;
+      }
       logger.info(`[DEV EMAIL] Viewing confirmation to ${recipientEmail} for ${details.propertyTitle}`);
       return true;
     }
@@ -194,9 +206,89 @@ export class EmailService {
         return false;
       }
     } else {
+      if (config.env === 'production') {
+        logger.error('Offer status email failed: RESEND_API_KEY is not configured in production.');
+        return false;
+      }
       logger.info(`[DEV EMAIL] Offer update to ${recipientEmail} (${details.status})`);
       return true;
     }
+  }
+
+  async sendDirectEmail(options: {
+    to: string;
+    subject: string;
+    body: string;
+    senderName?: string;
+    senderEmail?: string;
+  }): Promise<boolean> {
+    const html = `
+      <div style="font-family: Arial, sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="border-bottom: 2px solid #004274; padding-bottom: 12px; margin-bottom: 20px;">
+          <h2 style="color: #004274; margin: 0; font-size: 20px;">THE TENANT COMPANY</h2>
+          <span style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Estate Advisory & Representation</span>
+        </div>
+        <div style="color: #334155; font-size: 14px; line-height: 1.7; white-space: pre-line;">
+          ${options.body}
+        </div>
+        <div style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+          <p style="margin: 2px 0; font-weight: bold; color: #1e293b;">${options.senderName || 'Advisory Desk'}</p>
+          <p style="margin: 2px 0;">The Tenant Company — Real Estate Advisory</p>
+          <p style="margin: 2px 0; color: #004274;">Dublin • London • Dubai</p>
+        </div>
+      </div>
+    `;
+
+    if (this.resend) {
+      try {
+        await this.resend.emails.send({
+          from: config.resend.mailFrom,
+          to: [options.to],
+          subject: options.subject,
+          html,
+        });
+        return true;
+      } catch (err) {
+        logger.error({ err }, `Error sending direct email to ${options.to}`);
+        return false;
+      }
+    } else {
+      if (config.env === 'production') {
+        logger.error('Direct email failed: RESEND_API_KEY is not configured in production.');
+        return false;
+      }
+      logger.info(`\n[DEV DIRECT EMAIL DISPATCH]\nTO: ${options.to}\nSUBJECT: ${options.subject}\nBODY:\n${options.body}\n`);
+      return true;
+    }
+  }
+
+  getEmailTemplates() {
+    return [
+      {
+        id: 'viewing_followup',
+        title: 'Viewing Follow-up & Feedback',
+        subject: 'Following up on your viewing — The Tenant Company',
+        body: 'Dear client,\n\nThank you for taking the time to view the property with us today. We would be delighted to hear your thoughts and answer any questions you may have regarding the property, lease terms, or surrounding neighborhood.\n\nPlease let us know if you would like to proceed with a formal proposal or explore comparable opportunities in our portfolio.\n\nWarm regards,\n',
+      },
+      {
+        id: 'property_brochure',
+        title: 'Property Dossier & Brochure',
+        subject: 'Property Dossier & Specifications — The Tenant Company',
+        body: 'Dear client,\n\nFollowing our conversation, please find attached the detailed brochure and specifications for the property we discussed.\n\nHighlights:\n- Premium location with high connectivity\n- High-spec architectural finish\n- Turnkey condition\n\nWe can arrange an exclusive in-person or virtual walkthrough at your earliest convenience.\n\nKind regards,\n',
+      },
+      {
+        id: 'offer_update',
+        title: 'Offer Review & Negotiation Update',
+        subject: 'Update Regarding Your Purchase Proposal — The Tenant Company',
+        body: 'Dear client,\n\nWe have formally presented your proposal to the vendors. They have reviewed your position and terms.\n\nPlease find the latest status and our advisory guidance attached. We look forward to discussing the next steps.\n\nSincerely,\n',
+      },
+      {
+        id: 'valuation_confirmation',
+        title: 'Valuation Appraisal Schedule',
+        subject: 'Confirmation of Property Valuation Appraisal — The Tenant Company',
+        body: 'Dear owner,\n\nThis email confirms that our senior valuation surveyor has scheduled a market appraisal for your property.\n\nOur team will assess current market comparables, tenant yield potential, and capital appreciation guidance to deliver a comprehensive appraisal report.\n\nBest regards,\n',
+      },
+    ];
   }
 }
 

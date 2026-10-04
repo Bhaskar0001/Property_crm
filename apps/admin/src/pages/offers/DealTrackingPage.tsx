@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileCheck,
@@ -7,6 +8,8 @@ import {
   DollarSign,
   ArrowRight,
   MapPin,
+  TrendingUp,
+  ShieldCheck,
 } from 'lucide-react';
 import { useDeals, useUpdateDealStage, Offer } from '../../hooks/useOffers';
 
@@ -56,6 +59,9 @@ export function DealTrackingPage() {
   const totalVolume = data?.totalVolume || 0;
   const grouped = data?.grouped || {};
 
+  const [commissionRate, setCommissionRate] = useState<number>(2.0);
+  const estimatedCommission = (totalVolume * commissionRate) / 100;
+
   const handleAdvanceStage = (
     offer: Offer,
     currentStage: typeof DEAL_STAGES[number]['key']
@@ -85,12 +91,25 @@ export function DealTrackingPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Deal Conveyancing Pipeline</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Deal Conveyancing & Commission Pipeline</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Track legal conveyancing milestones, contract exchanges, and completion handovers.
+            Track legal conveyancing milestones, contract exchanges, escrow deposits, and projected agency fees.
           </p>
         </div>
         <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 bg-white px-3 py-1.5 border border-gray-200 rounded-md shadow-xs text-xs">
+            <span className="text-gray-500 font-medium">Agency Fee Rate:</span>
+            <select
+              value={commissionRate}
+              onChange={(e) => setCommissionRate(Number(e.target.value))}
+              className="font-bold text-[#004274] bg-transparent focus:outline-none cursor-pointer"
+            >
+              <option value={1.5}>1.5%</option>
+              <option value={2.0}>2.0% (Standard)</option>
+              <option value={2.5}>2.5%</option>
+              <option value={3.0}>3.0% (Prime)</option>
+            </select>
+          </div>
           <Link
             to="/offers"
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -101,8 +120,8 @@ export function DealTrackingPage() {
         </div>
       </div>
 
-      {/* KPI Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* KPI Overview (4 columns) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Deals</p>
@@ -124,6 +143,25 @@ export function DealTrackingPage() {
           </div>
           <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
             <DollarSign className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
+          <div>
+            <div className="flex items-center space-x-1">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Est. Commission
+              </p>
+              <span className="text-[10px] font-bold text-[#004274] bg-blue-50 px-1.5 py-0.2 rounded">
+                {commissionRate}%
+              </span>
+            </div>
+            <p className="text-2xl font-bold text-[#004274] mt-1">
+              €{Math.round(estimatedCommission).toLocaleString()}
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#004274]">
+            <TrendingUp className="w-5 h-5" />
           </div>
         </div>
 
@@ -218,10 +256,30 @@ export function DealTrackingPage() {
                                 {deal.amount.toLocaleString()}
                               </span>
                             </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500 text-[11px]">Agency Fee ({commissionRate}%):</span>
+                              <span className="font-semibold text-[#004274]">
+                                {symbol}
+                                {Math.round((deal.amount * commissionRate) / 100).toLocaleString()}
+                              </span>
+                            </div>
                             <div className="flex justify-between items-center text-[11px]">
                               <span className="text-gray-500">Buyer:</span>
                               <span className="font-medium text-gray-800 truncate max-w-[120px]">
                                 {deal.buyerName || deal.customer?.name || 'Client'}
+                              </span>
+                            </div>
+                            <div className="pt-1 border-t border-gray-200/60 flex items-center justify-between text-[10px]">
+                              <span className="text-gray-500 flex items-center">
+                                <ShieldCheck className="w-3 h-3 text-emerald-600 mr-1" />
+                                Escrow Deposit:
+                              </span>
+                              <span className="font-semibold text-slate-700">
+                                {stage.key === 'completed'
+                                  ? 'Disbursed'
+                                  : stage.key === 'contracts_exchanged'
+                                  ? '10% Bound'
+                                  : 'Deposit Held'}
                               </span>
                             </div>
                           </div>

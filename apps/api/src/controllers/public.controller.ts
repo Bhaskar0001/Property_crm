@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { publicService } from '../services/public.service';
+import { chatService } from '../services/chat.service';
 
 export class PublicController {
   async list(req: Request, res: Response, next: NextFunction) {
@@ -99,6 +100,18 @@ export class PublicController {
     }
   }
 
+  async currencies(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const currencies = await publicService.getPublicCurrencies();
+      res.status(200).json({
+        success: true,
+        data: currencies,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async propertyTypes(_req: Request, res: Response, next: NextFunction) {
     try {
       const types = await publicService.getPublicPropertyTypes();
@@ -111,12 +124,126 @@ export class PublicController {
     }
   }
 
-  async sitemap(_req: Request, res: Response, next: NextFunction) {
+  async listingTypes(_req: Request, res: Response, next: NextFunction) {
     try {
-      const sitemapData = await publicService.getSitemapData();
+      const types = await publicService.getPublicListingTypes();
+      res.status(200).json({
+        success: true,
+        data: types,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async features(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const features = await publicService.getPublicFeatures();
+      res.status(200).json({
+        success: true,
+        data: features,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async sitemap(req: Request, res: Response, next: NextFunction) {
+    try {
+      const baseUrl = process.env.PUBLIC_WEBSITE_URL || `${req.protocol}://${req.get('host')}`;
+      const wantsXml = req.path.endsWith('.xml') || req.query.format === 'xml' || req.headers.accept?.includes('application/xml');
+
+      if (wantsXml) {
+        const xml = await publicService.getSitemapXml(baseUrl);
+        res.setHeader('Content-Type', 'application/xml');
+        return res.status(200).send(xml);
+      }
+
+      const sitemapData = await publicService.getSitemapData(baseUrl);
       res.status(200).json({
         success: true,
         data: sitemapData,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async robots(req: Request, res: Response, next: NextFunction) {
+    try {
+      const baseUrl = process.env.PUBLIC_WEBSITE_URL || `${req.protocol}://${req.get('host')}`;
+      const robots = publicService.getRobotsTxt(baseUrl);
+      res.setHeader('Content-Type', 'text/plain');
+      res.status(200).send(robots);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async trackInquiry(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { propertyId, channel, customerName, customerPhone, customerEmail } = req.body;
+      const result = await publicService.trackInquiry({
+        propertyId,
+        channel: channel || 'website',
+        customerName,
+        customerPhone,
+        customerEmail,
+      });
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async submitOffer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await publicService.submitOffer(req.body);
+      res.status(201).json({
+        success: true,
+        message: 'Your purchase offer has been registered and submitted to the listing agent.',
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async requestValuation(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await publicService.requestValuation(req.body);
+      res.status(201).json({
+        success: true,
+        message: 'Your valuation appraisal request has been submitted. An advisory specialist will contact you shortly.',
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getContactInfo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await chatService.getAdvisoryContactInfo();
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async chat(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { message, conversationHistory } = req.body;
+      const result = await chatService.processPublicChat(message, conversationHistory || []);
+      res.status(200).json({
+        success: true,
+        data: result,
       });
     } catch (error) {
       next(error);

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
+import { CountryFilterProvider } from './context/CountryFilterContext';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { LoginPage } from './pages/auth/LoginPage';
@@ -36,7 +37,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
+        <CountryFilterProvider>
+          <BrowserRouter>
           <Routes>
             {/* Public Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
@@ -69,6 +71,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
+        </CountryFilterProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

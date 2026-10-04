@@ -18,27 +18,38 @@ import {
   MessageSquare,
   X,
   Heart,
+  Video,
+  Download,
+  Play,
+  Tag,
 } from 'lucide-react';
-import { usePublicProperty } from '../hooks/usePublicData';
-import { formatCurrency } from '../../src/lib/utils';
+import { usePublicProperty, useContactInfo } from '../hooks/usePublicData';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useFavorites, useToggleFavorite, useSubmitEnquiry } from '../hooks/useCustomerData';
+import { useCurrency } from '../context/CurrencyContext';
+import { OfferSubmissionModal } from '../components/property/OfferSubmissionModal';
+import { publicApi } from '../lib/api';
 
 export function PropertyDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data, isLoading, error } = usePublicProperty(slug || '');
+  const { data: contact } = useContactInfo();
 
   const { customer } = useCustomerAuth();
   const { data: favorites = [] } = useFavorites();
   const toggleFavorite = useToggleFavorite();
   const submitEnquiry = useSubmitEnquiry();
+  const { formatPrice } = useCurrency();
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showViewingModal, setShowViewingModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
   const [viewingForm, setViewingForm] = useState({
     name: customer?.name || '',
     email: customer?.email || '',
     phone: customer?.phone || '',
+    visitType: 'in_person' as 'in_person' | 'virtual',
+    virtualPlatform: 'whatsapp_video',
     preferredDate: '',
     preferredTime: 'morning',
     notes: '',
@@ -109,13 +120,15 @@ export function PropertyDetailPage() {
   }
 
   const { property, media = [], documents = [] } = data;
-  const currencyCode = property.currency?.code || 'EUR';
 
   // Images list
-  const fallbackImage =
-    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80';
-  const images = media.length > 0 ? media.map((m) => m.originalUrl) : [fallbackImage];
-  const activeImage = images[activeImageIndex] || fallbackImage;
+  const images =
+    media.length > 0
+      ? media.map((m) => m.originalUrl)
+      : property.coverImage
+      ? [property.coverImage]
+      : [];
+  const activeImage = images[activeImageIndex] || property.coverImage || '';
 
   // WhatsApp link
   const currentUrl = window.location.href;
@@ -154,6 +167,8 @@ export function PropertyDetailPage() {
         phone: viewingForm.phone,
         propertyId: property._id,
         type: 'viewing',
+        visitType: viewingForm.visitType,
+        virtualPlatform: viewingForm.visitType === 'virtual' ? viewingForm.virtualPlatform : undefined,
         scheduledDate: viewingForm.preferredDate || undefined,
         scheduledTime: viewingForm.preferredTime || undefined,
         notes: viewingForm.notes || undefined,
@@ -162,6 +177,43 @@ export function PropertyDetailPage() {
     } catch (err) {
       console.error('Failed to submit viewing:', err);
     }
+  };
+
+  const handleDownloadBrochure = () => {
+    const uploadedBrochure = documents.find((d: any) => d.type === 'brochure' && d.fileUrl);
+    if (uploadedBrochure) {
+      window.open(uploadedBrochure.fileUrl, '_blank');
+    } else if (property?.slug) {
+      window.open(`/properties/${property.slug}/brochure?autoPrint=true`, '_blank');
+    } else {
+      window.print();
+    }
+    publicApi.post('/track-inquiry', {
+      propertyId: property?._id,
+      channel: 'brochure',
+      customerName: customer?.name,
+      customerEmail: customer?.email,
+    }).catch(() => {});
+  };
+
+  const handleTrackWhatsAppClick = () => {
+    publicApi.post('/track-inquiry', {
+      propertyId: property?._id,
+      channel: 'whatsapp',
+      customerName: customer?.name,
+      customerPhone: customer?.phone,
+      customerEmail: customer?.email,
+    }).catch(() => {});
+  };
+
+  const handleTrackCallClick = () => {
+    publicApi.post('/track-inquiry', {
+      propertyId: property?._id,
+      channel: 'call',
+      customerName: customer?.name,
+      customerPhone: customer?.phone,
+      customerEmail: customer?.email,
+    }).catch(() => {});
   };
 
   return (
@@ -224,9 +276,10 @@ export function PropertyDetailPage() {
             <span className="text-2xl sm:text-3xl font-extrabold text-[#004274]">
               {property.priceOnRequest
                 ? 'Price on Request'
-                : formatCurrency(property.price, currencyCode)}
+                : formatPrice(property.price)}
             </span>
             <div className="flex items-center space-x-2 mt-2">
+
               <button
                 type="button"
                 onClick={handleToggleFavorite}
@@ -413,6 +466,74 @@ export function PropertyDetailPage() {
               </div>
             )}
 
+            {/* Video Walkthrough Player */}
+            {(property.videoUrl || media.some((m: any) => m.type === 'video')) && (
+              <div className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                    <Video className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900">Cinematic Video Walkthrough</h2>
+                    <p className="text-xs text-slate-500">Immersive property tour of exterior grounds and interior architecture.</p>
+                  </div>
+                </div>
+                <div className="rounded-xl overflow-hidden aspect-video bg-black shadow-md">
+                  {(() => {
+                    const videoSrc = property.videoUrl || media.find((m: any) => m.type === 'video')?.originalUrl || '';
+                    if (videoSrc.includes('youtube')) {
+                      return (
+                        <iframe
+                          src={videoSrc.replace('watch?v=', 'embed/')}
+                          title="Property Video Tour"
+                          className="w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      );
+                    }
+                    if (videoSrc.includes('vimeo')) {
+                      const vimeoId = videoSrc.split('/').pop();
+                      return (
+                        <iframe
+                          src={`https://player.vimeo.com/video/${vimeoId}`}
+                          title="Property Video Tour"
+                          className="w-full h-full border-0"
+                          allowFullScreen
+                        />
+                      );
+                    }
+                    return (
+                      <video src={videoSrc} controls className="w-full h-full object-cover" />
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* 3D Virtual Tour Walkthrough (Matterport / Kuula) */}
+            {(property.virtualTourUrl || media.some((m: any) => m.type === 'virtual_tour')) && (
+              <div className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                    <Play className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900">3D Interactive Virtual Walkthrough</h2>
+                    <p className="text-xs text-slate-500">Explore dollhouse views and step inside virtually.</p>
+                  </div>
+                </div>
+                <div className="rounded-xl overflow-hidden aspect-video bg-slate-950 shadow-md">
+                  <iframe
+                    src={property.virtualTourUrl || media.find((m: any) => m.type === 'virtual_tour')?.originalUrl || ''}
+                    title="3D Virtual Walkthrough"
+                    className="w-full h-full border-0"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Floor Plans & Public Documents */}
             {documents.length > 0 && (
               <div className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm space-y-4">
@@ -450,7 +571,7 @@ export function PropertyDetailPage() {
                   Representation & Sales
                 </span>
                 <h3 className="text-xl font-bold text-slate-900">
-                  {formatCurrency(property.price, currencyCode)}
+                  {formatPrice(property.price)}
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
                   Guideline Price • Exclusive Instruction
@@ -472,10 +593,20 @@ export function PropertyDetailPage() {
 
               {/* Actions */}
               <div className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowOfferModal(true)}
+                  className="w-full py-3 bg-[#002544] hover:bg-[#00172c] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-md flex items-center justify-center space-x-2 border border-[#6fabca]/30 group"
+                >
+                  <Tag className="w-4 h-4 text-[#6fabca] group-hover:scale-110 transition-transform" />
+                  <span>Submit Binding Offer</span>
+                </button>
+
                 <a
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={handleTrackWhatsAppClick}
                   className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-md flex items-center justify-center space-x-2"
                 >
                   <MessageSquare className="w-4 h-4" />
@@ -490,28 +621,44 @@ export function PropertyDetailPage() {
                   <Calendar className="w-4 h-4" />
                   <span>Request Private Viewing</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadBrochure}
+                  className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-300 transition-colors shadow-xs flex items-center justify-center space-x-2"
+                >
+                  <Download className="w-4 h-4 text-[#004274]" />
+                  <span>Download Brochure (PDF)</span>
+                </button>
               </div>
 
               {/* Quick direct contact info */}
               <div className="pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-600">
-                <a
-                  href="tel:+35312345678"
-                  className="flex items-center space-x-2 hover:text-[#004274]"
-                >
-                  <Phone className="w-3.5 h-3.5 text-[#6fabca]" />
-                  <span>+353 1 234 5678</span>
-                </a>
-                <a
-                  href="mailto:info@propertyos.com"
-                  className="flex items-center space-x-2 hover:text-[#004274]"
-                >
-                  <Mail className="w-3.5 h-3.5 text-[#6fabca]" />
-                  <span>info@propertyos.com</span>
-                </a>
-                <div className="flex items-center space-x-2 text-slate-400">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Mon - Sat 08:30 - 18:30 GMT</span>
-                </div>
+                {contact?.phone && (
+                  <a
+                    href={`tel:${contact.phone}`}
+                    onClick={handleTrackCallClick}
+                    className="flex items-center space-x-2 hover:text-[#004274]"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-[#6fabca]" />
+                    <span>{contact.phone}</span>
+                  </a>
+                )}
+                {contact?.email && (
+                  <a
+                    href={`mailto:${contact.email}`}
+                    className="flex items-center space-x-2 hover:text-[#004274]"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-[#6fabca]" />
+                    <span>{contact.email}</span>
+                  </a>
+                )}
+                {contact?.officeHours && (
+                  <div className="flex items-center space-x-2 text-slate-400">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{contact.officeHours}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -564,6 +711,67 @@ export function PropertyDetailPage() {
                     For {property.title}
                   </p>
                 </div>
+
+                {/* Appointment Format: Physical vs Virtual */}
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    Appointment Format *
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setViewingForm({ ...viewingForm, visitType: 'in_person' })}
+                      className={`p-3 rounded-xl border text-left flex items-start space-x-2.5 transition-all ${
+                        viewingForm.visitType === 'in_person'
+                          ? 'border-[#004274] bg-[#004274]/5 text-[#004274] ring-1 ring-[#004274]'
+                          : 'border-slate-200 hover:bg-slate-50 text-slate-600'
+                      }`}
+                    >
+                      <Home className="w-4 h-4 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold leading-tight">Physical Visit</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5">On-site private walkthrough</p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setViewingForm({ ...viewingForm, visitType: 'virtual' })}
+                      className={`p-3 rounded-xl border text-left flex items-start space-x-2.5 transition-all ${
+                        viewingForm.visitType === 'virtual'
+                          ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700 ring-1 ring-indigo-600'
+                          : 'border-slate-200 hover:bg-slate-50 text-slate-600'
+                      }`}
+                    >
+                      <Video className="w-4 h-4 mt-0.5 shrink-0 text-indigo-600" />
+                      <div>
+                        <p className="text-xs font-bold leading-tight">Virtual Video Tour</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Guided video walkthrough</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {viewingForm.visitType === 'virtual' && (
+                  <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 space-y-2">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-indigo-900">
+                      Preferred Video Platform *
+                    </label>
+                    <select
+                      value={viewingForm.virtualPlatform}
+                      onChange={(e) => setViewingForm({ ...viewingForm, virtualPlatform: e.target.value })}
+                      className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-xs text-slate-800 font-medium focus:ring-1 focus:ring-indigo-500"
+                    >
+                      <option value="whatsapp_video">WhatsApp Video Call (Recommended)</option>
+                      <option value="zoom">Zoom Video Conference</option>
+                      <option value="google_meet">Google Meet</option>
+                      <option value="facetime">Apple FaceTime</option>
+                    </select>
+                    <p className="text-[10px] text-indigo-700/80">
+                      Our senior advisor will host a private HD video walkthrough at your selected time.
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
@@ -659,6 +867,15 @@ export function PropertyDetailPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Purchase Offer Modal */}
+      {property && (
+        <OfferSubmissionModal
+          isOpen={showOfferModal}
+          onClose={() => setShowOfferModal(false)}
+          property={property}
+        />
       )}
     </div>
   );

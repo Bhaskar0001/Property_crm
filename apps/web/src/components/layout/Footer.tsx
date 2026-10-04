@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Building2, Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
+import { Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
+import { LuxuryEmblem } from '../common/LuxuryEmblem';
+import { useContactInfo } from '../../hooks/usePublicData';
 
 export function Footer() {
+  const { data: contact } = useContactInfo();
   return (
     <footer className="bg-[#0b192c] text-slate-300 pt-16 pb-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -9,12 +12,17 @@ export function Footer() {
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-[#004274] flex items-center justify-center text-white">
-                <Building2 className="w-6 h-6 text-[#6fabca]" />
+              <div className="w-11 h-11 rounded-xl bg-slate-950 border border-amber-500/30 flex items-center justify-center shadow-lg">
+                <LuxuryEmblem size="sm" variant="gold" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-white uppercase">
-                Property<span className="text-[#6fabca]">OS</span>
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xl font-extrabold tracking-tight text-white uppercase">
+                  Estate<span className="text-amber-400">Elite</span>
+                </span>
+                <span className="text-[10px] uppercase tracking-widest text-slate-400 font-medium -mt-0.5">
+                  International Realty
+                </span>
+              </div>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
               Premier real estate advisory specializing in prime residential sales, luxury lettings,
@@ -60,35 +68,30 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Territories */}
+          {/* Explore */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-4">
-              Territories
+              Explore
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
-                <Link to="/properties?city=Dublin" className="hover:text-white transition-colors">
-                  Dublin City & County
+                <Link to="/properties" className="hover:text-white transition-colors">
+                  All Properties
                 </Link>
               </li>
               <li>
-                <Link to="/properties?city=London" className="hover:text-white transition-colors">
-                  Greater London
+                <Link to="/properties?isFeatured=true" className="hover:text-white transition-colors">
+                  Featured Portfolios
                 </Link>
               </li>
               <li>
-                <Link to="/properties?city=Dubai" className="hover:text-white transition-colors">
-                  Dubai & Palm Jumeirah
-                </Link>
-              </li>
-              <li>
-                <Link to="/properties?city=Cork" className="hover:text-white transition-colors">
-                  Cork & Munster
+                <Link to="/services" className="hover:text-white transition-colors">
+                  Advisory Services
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="hover:text-white transition-colors">
-                  International Desk
+                  Private Advisory Desk
                 </Link>
               </li>
             </ul>
@@ -100,27 +103,35 @@ export function Footer() {
               Headquarters
             </h4>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-start space-x-2">
-                <MapPin className="w-4 h-4 text-[#6fabca] shrink-0 mt-0.5" />
-                <span className="text-slate-400">
-                  24-26 Fitzwilliam Place, Dublin 2, D02 T928, Ireland
-                </span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <Phone className="w-4 h-4 text-[#6fabca] shrink-0" />
-                <span className="text-slate-400">+353 1 234 5678</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 text-[#6fabca] shrink-0" />
-                <span className="text-slate-400">info@propertyos.com</span>
-              </li>
+              {contact?.address && (
+                <li className="flex items-start space-x-2">
+                  <MapPin className="w-4 h-4 text-[#6fabca] shrink-0 mt-0.5" />
+                  <span className="text-slate-400">{contact.address}</span>
+                </li>
+              )}
+              {contact?.phone && (
+                <li className="flex items-center space-x-2">
+                  <Phone className="w-4 h-4 text-[#6fabca] shrink-0" />
+                  <a href={`tel:${contact.phone}`} className="text-slate-400 hover:text-white transition">
+                    {contact.phone}
+                  </a>
+                </li>
+              )}
+              {contact?.email && (
+                <li className="flex items-center space-x-2">
+                  <Mail className="w-4 h-4 text-[#6fabca] shrink-0" />
+                  <a href={`mailto:${contact.email}`} className="text-slate-400 hover:text-white transition">
+                    {contact.email}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
 
         {/* Bottom copyright */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} PropertyOS Group. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {contact?.companyName || 'EstateElite'}. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-slate-400">
               Privacy Policy

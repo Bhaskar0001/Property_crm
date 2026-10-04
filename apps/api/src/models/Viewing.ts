@@ -4,6 +4,9 @@ export interface IViewing extends Document {
   property: mongoose.Types.ObjectId;
   lead?: mongoose.Types.ObjectId;
   customer?: mongoose.Types.ObjectId;
+  visitType?: 'in_person' | 'virtual';
+  virtualPlatform?: 'whatsapp_video' | 'zoom' | 'google_meet' | 'facetime' | 'other';
+  meetingLink?: string;
   scheduledDate: Date;
   scheduledTime: string;
   duration?: number;
@@ -24,6 +27,17 @@ const schema = new Schema<IViewing>(
     property: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
     lead: { type: Schema.Types.ObjectId, ref: 'Lead' },
     customer: { type: Schema.Types.ObjectId, ref: 'Customer' },
+    visitType: {
+      type: String,
+      enum: ['in_person', 'virtual'],
+      default: 'in_person',
+    },
+    virtualPlatform: {
+      type: String,
+      enum: ['whatsapp_video', 'zoom', 'google_meet', 'facetime', 'other'],
+      default: 'whatsapp_video',
+    },
+    meetingLink: { type: String },
     scheduledDate: { type: Date, required: true },
     scheduledTime: { type: String, default: '10:00' },
     duration: { type: Number, default: 30 },

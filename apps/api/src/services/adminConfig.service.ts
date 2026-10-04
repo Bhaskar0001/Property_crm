@@ -37,6 +37,9 @@ export class AdminConfigService {
     if (!data.code && data.name) {
       data.code = data.name.toUpperCase().trim().replace(/[^A-Z0-9]+/g, '_').replace(/(^_|_$)+/g, '');
     }
+    if (!data.isoCode && data.code) {
+      data.isoCode = data.code.toUpperCase().trim();
+    }
     if (data.currency === '' || (typeof data.currency === 'string' && data.currency.length !== 24)) {
       delete data.currency;
     }
@@ -44,6 +47,12 @@ export class AdminConfigService {
   }
 
   async update(id: string, data: any) {
+    if (data.code && !data.isoCode) {
+      data.isoCode = data.code.toUpperCase().trim();
+    }
+    if (data.currency === '' || (typeof data.currency === 'string' && data.currency.length !== 24)) {
+      delete data.currency;
+    }
     const item = await this.model.findByIdAndUpdate(id, data, { new: true, runValidators: true });
     if (!item) throw new NotFoundError(`${this.model.modelName} not found`);
     return item;

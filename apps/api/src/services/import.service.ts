@@ -10,6 +10,10 @@ import { LeadStageModel } from '../models/LeadStage';
 import { auditService } from './audit.service';
 import { ValidationError } from '../utils/errors';
 
+import { ListingTypeModel } from '../models/ListingType';
+import { resolveCoordinates } from '../utils/geocoder';
+import { getIO } from '../config/socket';
+
 export interface ImportResult {
   success: boolean;
   total: number;
@@ -25,13 +29,20 @@ export class ImportService {
       throw new ValidationError('Upload must contain at least one valid row');
     }
 
-    // Default lookup dependencies
-    const [defaultCountry, defaultType, defaultStatus, defaultCurrency] = await Promise.all([
-      CountryModel.findOne({ isActive: true }),
-      PropertyTypeModel.findOne({ isActive: true }),
-      PropertyStatusModel.findOne({ code: 'AVAILABLE' }) || PropertyStatusModel.findOne({ isActive: true }),
-      CurrencyModel.findOne({ isActive: true }),
+    // Preload lookups for fast dynamic matching
+    const [countries, propertyTypes, listingTypes, statuses, currencies] = await Promise.all([
+      CountryModel.find().lean(),
+      PropertyTypeModel.find().lean(),
+      ListingTypeModel.find().lean(),
+      PropertyStatusModel.find().lean(),
+      CurrencyModel.find().lean(),
     ]);
+
+    const defaultCountry = countries.find((c) => c.isActive) || countries[0];
+    const defaultType = propertyTypes.find((t) => t.isActive) || propertyTypes[0];
+    const defaultListing = listingTypes.find((l) => l.isActive) || listingTypes[0];
+    const defaultStatus = statuses.find((s) => s.code === 'ACTIVE' || s.code === 'AVAILABLE') || statuses[0];
+    const defaultCurrency = currencies.find((c) => c.isDefault) || currencies.find((c) => c.code === 'EUR') || currencies[0];
 
     let created = 0;
     let skipped = 0;
@@ -40,7 +51,8 @@ export class ImportService {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
       const title = row.title || row.Title || row['Property Title'];
-      const price = Number(row.price || row.Price || row['Asking Price']);
+      const rawPrice = row.price || row.Price || row['Asking Price'] || row['Price'];
+      const price = Number(String(rawPrice).replace(/[^0-9.]/g, ''));
 
       if (!title || !price || isNaN(price)) {
         errors.push(`Row ${i + 1}: Missing required title or valid numeric price.`);
@@ -61,21 +73,80 @@ export class ImportService {
         .replace(/(^-|-$)+/g, '');
       const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
 
+      // Resolve Country
+      const rawCountry = (row.country || row.Country || '').trim().toLowerCase();
+      const matchedCountry = countries.find(
+        (c) =>
+          c.name.toLowerCase() === rawCountry ||
+          c.isoCode.toLowerCase() === rawCountry ||
+          (rawCountry.length > 2 && c.name.toLowerCase().includes(rawCountry))
+      ) || defaultCountry;
+
+      // Resolve City & Address
+      const city = row.city || row.City || 'Amsterdam';
+      const area = row.area || row.Area || '';
+      const address = row.address || row.Address || `${area ? area + ', ' : ''}${city}`;
+
+      // Resolve Property Type
+      const rawType = (row.propertyType || row['Property Type'] || row.type || row.Type || '').trim().toLowerCase();
+      const matchedType = propertyTypes.find(
+        (t) =>
+          t.name.toLowerCase() === rawType ||
+          t.slug.toLowerCase() === rawType ||
+          (rawType && t.name.toLowerCase().includes(rawType))
+      ) || defaultType;
+
+      // Resolve Listing Type
+      const rawListing = (row.listingType || row['Listing Type'] || '').trim().toLowerCase();
+      const matchedListing = listingTypes.find(
+        (l) =>
+          l.name.toLowerCase() === rawListing ||
+          l.slug.toLowerCase() === rawListing ||
+          (rawListing.includes('rent') && l.slug.includes('rent')) ||
+          (rawListing.includes('sale') && l.slug.includes('sale'))
+      ) || defaultListing;
+
+      // Resolve Currency
+      const rawCurrency = (row.currency || row.Currency || '').trim().toUpperCase();
+      const matchedCurrency = currencies.find(
+        (c) => c.code === rawCurrency || (rawCurrency === '$' && c.code === 'USD') || (rawCurrency === '€' && c.code === 'EUR') || (rawCurrency === '£' && c.code === 'GBP')
+      ) || defaultCurrency;
+
+      // Resolve Coordinates
+      let lat = row.latitude !== undefined && row.latitude !== '' ? Number(row.latitude) : undefined;
+      let lng = row.longitude !== undefined && row.longitude !== '' ? Number(row.longitude) : undefined;
+      if (lat === undefined || isNaN(lat) || lng === undefined || isNaN(lng)) {
+        const coords = resolveCoordinates(city, matchedCountry?.name, address);
+        lat = coords.latitude;
+        lng = coords.longitude;
+      }
+
+      // Cover image
+      const coverImage = row.coverImage || row.image || row['Cover Image'] || row['Image'] || undefined;
+
       try {
         await PropertyModel.create({
           title: title.trim(),
           slug: uniqueSlug,
           price,
-          currency: defaultCurrency?._id,
-          country: defaultCountry?._id,
-          propertyType: defaultType?._id,
+          currency: matchedCurrency?._id,
+          country: matchedCountry?._id,
+          propertyType: matchedType?._id,
+          listingType: matchedListing?._id,
           status: defaultStatus?._id,
-          city: row.city || row.City || 'Dublin',
-          area: row.area || row.Area || '',
+          city,
+          area,
+          address,
+          latitude: lat,
+          longitude: lng,
           bedrooms: Number(row.bedrooms || row.Bedrooms) || undefined,
           bathrooms: Number(row.bathrooms || row.Bathrooms) || undefined,
           livingArea: Number(row.livingArea || row['Living Area']) || undefined,
+          coverImage,
+          description: row.description || row.Description || undefined,
+          shortDescription: row.shortDescription || row['Short Description'] || undefined,
           isPublished: true,
+          isVisibleInSearch: true,
           createdBy: user?._id,
         });
         created++;
@@ -92,6 +163,12 @@ export class ImportService {
       entity: 'Property',
       entityId: 'bulk',
     });
+
+    // Notify all connected clients via Socket.IO
+    const io = getIO();
+    if (io) {
+      io.emit('properties_imported', { created, skipped, total: rows.length });
+    }
 
     return {
       success: true,

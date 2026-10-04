@@ -9,22 +9,28 @@ import {
   CheckCircle2,
   ExternalLink,
   MapPin,
+  Tag,
+  RotateCcw,
+  Clock,
 } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import {
   useFavorites,
   useCustomerEnquiries,
+  useCustomerOffers,
   useUpdateCustomerProfile,
 } from '../hooks/useCustomerData';
 import { PropertyCard } from '../components/property/PropertyCard';
 
 export function CustomerPortalPage() {
   const { customer, openLoginModal, logout } = useCustomerAuth();
-  const [activeTab, setActiveTab] = useState<'favorites' | 'enquiries' | 'profile'>('favorites');
+  const [activeTab, setActiveTab] = useState<'favorites' | 'enquiries' | 'offers' | 'profile'>('favorites');
 
   const { data: favorites = [], isLoading: loadingFavorites } = useFavorites();
   const { data: enquiries, isLoading: loadingEnquiries } = useCustomerEnquiries();
+  const { data: offers = [], isLoading: loadingOffers } = useCustomerOffers();
   const updateProfile = useUpdateCustomerProfile();
+
 
   // Profile form state
   const [name, setName] = useState(customer?.name || '');
@@ -126,6 +132,18 @@ export function CustomerPortalPage() {
           >
             <Calendar className="w-4 h-4" />
             <span>Viewings & Requests ({viewings.length + leads.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('offers')}
+            className={`flex items-center space-x-2 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors ${
+              activeTab === 'offers'
+                ? 'bg-[#004274] text-white shadow-sm'
+                : 'text-slate-600 hover:text-[#004274] bg-white border border-slate-200'
+            }`}
+          >
+            <Tag className="w-4 h-4" />
+            <span>My Offers & Deals ({offers.length})</span>
           </button>
 
           <button
@@ -264,7 +282,157 @@ export function CustomerPortalPage() {
           </div>
         )}
 
-        {/* Tab 3: Acquisition Criteria & Profile */}
+        {/* Tab 3: My Offers & Deals */}
+        {activeTab === 'offers' && (
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
+                  <Tag className="w-5 h-5 text-[#004274]" />
+                  <span>Your Submitted Purchase Offers & Negotiations</span>
+                </h2>
+                <span className="text-xs text-slate-500 font-medium">
+                  {offers.length} {offers.length === 1 ? 'active offer' : 'active offers'}
+                </span>
+              </div>
+
+              {loadingOffers ? (
+                <div className="space-y-3">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="h-24 bg-slate-100 rounded-xl animate-pulse" />
+                  ))}
+                </div>
+              ) : offers.length > 0 ? (
+                <div className="divide-y divide-slate-100">
+                  {offers.map((offer: any) => {
+                    const status = (offer.status || 'SUBMITTED').toUpperCase();
+                    const currencySymbol = offer.currency?.symbol || '€';
+                    const isCounter = status === 'COUNTER_OFFER' || status === 'COUNTERED';
+                    const isAccepted = status === 'ACCEPTED';
+                    const isRejected = status === 'REJECTED';
+
+                    return (
+                      <div key={offer._id} className="py-5 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                          <div className="flex items-start space-x-3.5">
+                            {offer.property?.coverImage && (
+                              <img
+                                src={offer.property.coverImage}
+                                alt=""
+                                className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
+                              />
+                            )}
+                            <div>
+                              <div className="flex items-center space-x-2 mb-1">
+                                {isAccepted ? (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                                    <CheckCircle2 className="w-3 h-3 mr-1" /> Offer Accepted
+                                  </span>
+                                ) : isCounter ? (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900">
+                                    <RotateCcw className="w-3 h-3 mr-1" /> Counter Offer Received
+                                  </span>
+                                ) : isRejected ? (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-800">
+                                    Declined
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-[#004274]">
+                                    <Clock className="w-3 h-3 mr-1" /> Under Review
+                                  </span>
+                                )}
+                                <span className="text-xs text-slate-400">
+                                  Submitted {new Date(offer.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+
+                              <h3 className="text-sm font-bold text-slate-900">
+                                {offer.property?.title || 'Property Acquisition Instruction'}
+                              </h3>
+                              <p className="text-xs text-slate-500">
+                                {[offer.property?.area, offer.property?.city].filter(Boolean).join(', ')}
+                              </p>
+
+                              <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+                                <div>
+                                  <span className="text-slate-400">Your Offer: </span>
+                                  <span className="font-extrabold text-[#004274]">
+                                    {currencySymbol}
+                                    {Number(offer.amount || 0).toLocaleString()}
+                                  </span>
+                                </div>
+                                {offer.purchasingPosition && (
+                                  <div className="text-slate-500 font-medium">
+                                    • {offer.purchasingPosition}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex sm:flex-col items-end gap-2 shrink-0">
+                            {offer.property?.slug && (
+                              <Link
+                                to={`/properties/${offer.property.slug}`}
+                                className="inline-flex items-center space-x-1 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition"
+                              >
+                                <span>View Property</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </Link>
+                            )}
+                            <Link
+                              to="/contact"
+                              className="inline-flex items-center text-xs font-semibold text-[#004274] hover:underline"
+                            >
+                              Contact Agent
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/* Counter-Offer Notification Box */}
+                        {isCounter && (
+                          <div className="p-3.5 bg-amber-50/80 border border-amber-200/90 rounded-xl space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-amber-900">
+                                Vendor Counter Offer Proposal:
+                              </span>
+                              {offer.counterAmount && (
+                                <span className="text-sm font-extrabold text-amber-950">
+                                  {currencySymbol}
+                                  {Number(offer.counterAmount).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-amber-800 leading-relaxed">
+                              {offer.notes ||
+                                'The seller has proposed a counter-position on price or closing timeline. Please speak with your assigned advisor to progress negotiations.'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-12 text-center space-y-3">
+                  <Tag className="w-10 h-10 text-slate-300 mx-auto" />
+                  <h3 className="text-sm font-bold text-slate-700">No Purchase Offers Submitted</h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    When you find an ideal prime residence, click "Make an Offer" on the listing page to lodge your proposal with our advisory desk.
+                  </p>
+                  <Link
+                    to="/properties"
+                    className="inline-block mt-2 px-4 py-2 bg-[#004274] text-white text-xs font-bold uppercase tracking-wider rounded-lg"
+                  >
+                    Browse Portfolios
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Acquisition Criteria & Profile */}
         {activeTab === 'profile' && (
           <div className="max-w-2xl bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
             <h2 className="text-lg font-bold text-slate-900 mb-1">

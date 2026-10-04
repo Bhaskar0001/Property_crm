@@ -8,7 +8,9 @@ import { ViewingModel } from '../models/Viewing';
 import { LeadModel } from '../models/Lead';
 import { LeadSourceModel } from '../models/LeadSource';
 import { LeadStageModel } from '../models/LeadStage';
+import { OfferModel } from '../models/Offer';
 import { emailService } from './email.service';
+import { notificationService } from './notification.service';
 import { config } from '../config';
 import { ValidationError, UnauthorizedError, NotFoundError } from '../utils/errors';
 import { logger } from '../utils/logger';
@@ -221,7 +223,17 @@ export class CustomerService {
     return { viewings, leads };
   }
 
-  // 9. Submit an Enquiry / Viewing Request (Automatically creates/links CRM Lead!)
+  // 9. Get customer purchase offers
+  async getOffers(customerId: string): Promise<any> {
+    const offers = await OfferModel.find({ customer: customerId })
+      .populate('property', 'title slug coverImage price city area')
+      .populate('currency', 'code symbol')
+      .sort({ createdAt: -1 })
+      .lean();
+    return offers;
+  }
+
+  // 10. Submit an Enquiry / Viewing Request (Automatically creates/links CRM Lead!)
   async createEnquiry(data: {
     customerId?: string;
     name: string;
@@ -229,6 +241,8 @@ export class CustomerService {
     phone: string;
     propertyId?: string;
     type?: 'viewing' | 'general' | 'valuation';
+    visitType?: 'in_person' | 'virtual';
+    virtualPlatform?: 'whatsapp_video' | 'zoom' | 'google_meet' | 'facetime' | 'other';
     scheduledDate?: string;
     scheduledTime?: string;
     notes?: string;
@@ -280,6 +294,12 @@ export class CustomerService {
       );
     }
 
+    const visitPrefix = data.type === 'viewing'
+      ? data.visitType === 'virtual'
+        ? `[VIRTUAL LIVE VIDEO WALKTHROUGH - ${data.virtualPlatform ? data.virtualPlatform.replace('_', ' ').toUpperCase() : 'WHATSAPP VIDEO'}] `
+        : '[PHYSICAL IN-PERSON VISIT] '
+      : '';
+
     // 4. Create CRM Lead record
     const lead = await LeadModel.create({
       customer: customer._id,
@@ -287,7 +307,7 @@ export class CustomerService {
       source: source?._id,
       stage: stage?._id,
       priority: data.type === 'viewing' ? 'high' : 'medium',
-      notes: data.notes || `New enquiry submitted via website for ${property?.title || 'general advisory'}.`,
+      notes: `${visitPrefix}${data.notes || `New enquiry submitted via website for ${property?.title || 'general advisory'}.`}`,
       lastContactedAt: new Date(),
     });
 
@@ -298,10 +318,12 @@ export class CustomerService {
         property: data.propertyId,
         lead: lead._id,
         customer: customer._id,
+        visitType: data.visitType || 'in_person',
+        virtualPlatform: data.virtualPlatform || (data.visitType === 'virtual' ? 'whatsapp_video' : undefined),
         scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : new Date(Date.now() + 86400000 * 2),
         scheduledTime: data.scheduledTime || 'morning',
         status: 'scheduled',
-        notes: data.notes,
+        notes: `${visitPrefix}${data.notes || ''}`.trim(),
       });
       viewingId = viewing._id.toString();
 
@@ -314,6 +336,18 @@ export class CustomerService {
         timeWindow: data.scheduledTime || 'Morning',
         notes: data.notes,
       });
+    }
+
+    // Broadcast real-time notification to all active admins & staff
+    try {
+      await notificationService.broadcastToAdmins({
+        title: data.type === 'viewing' ? 'New Viewing Appointment Requested' : 'New Client Property Enquiry',
+        message: `${customer.name} (${customer.email}) submitted a ${data.type === 'viewing' ? 'viewing request' : 'property enquiry'} for ${property?.title || 'general portfolio'}`,
+        type: data.type === 'viewing' ? 'viewing' : 'lead',
+        metadata: { leadId: lead._id, propertyId: data.propertyId, customerId: customer._id },
+      });
+    } catch (notifErr) {
+      logger.warn({ err: notifErr }, 'Failed to broadcast enquiry notification');
     }
 
     logger.info(`New enquiry received from ${normalizedEmail} for lead ${lead._id}`);

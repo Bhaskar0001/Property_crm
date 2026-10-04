@@ -1,8 +1,15 @@
 import { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, CheckCircle2, Building2 } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, CheckCircle2, Building2, Send, Loader2 } from 'lucide-react';
+import { useSubmitEnquiry } from '../hooks/useCustomerData';
+import { useContactInfo } from '../hooks/usePublicData';
 
 export function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const submitEnquiry = useSubmitEnquiry();
+  const { data: contact } = useContactInfo();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -11,37 +18,33 @@ export function ContactPage() {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setErrorMessage('');
+    try {
+      await submitEnquiry.mutateAsync({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || '',
+        notes: `[Inquiry Type: ${formData.inquiryType}] ${formData.message}`,
+        type: 'general',
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      setErrorMessage(err.response?.data?.message || 'Failed to send message. Please contact us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const offices = [
-    {
-      city: 'Dublin (Global HQ)',
-      address: '24-26 Fitzwilliam Place, Dublin 2, D02 T928',
-      country: 'Republic of Ireland',
-      phone: '+353 1 234 5678',
-      email: 'dublin@propertyos.com',
-      hours: 'Mon - Fri: 08:30 - 18:30 GMT',
-    },
-    {
-      city: 'London Mayfair',
-      address: '14 Berkeley Street, Mayfair, London W1J 8DX',
-      country: 'United Kingdom',
-      phone: '+44 20 7946 0912',
-      email: 'london@propertyos.com',
-      hours: 'Mon - Fri: 09:00 - 18:00 BST',
-    },
-    {
-      city: 'Dubai DIFC',
-      address: 'Gate Precinct 4, DIFC, PO Box 507111',
-      country: 'United Arab Emirates',
-      phone: '+971 4 362 7000',
-      email: 'dubai@propertyos.com',
-      hours: 'Mon - Fri: 09:00 - 18:00 GST',
-    },
-  ];
+  const office = {
+    city: contact?.companyName || 'Prime Advisory Office',
+    address: contact?.address || '',
+    phone: contact?.phone || '',
+    email: contact?.email || '',
+    hours: contact?.officeHours || '',
+  };
 
   return (
     <div className="bg-[#fcfdfd] min-h-screen py-12">
@@ -55,47 +58,49 @@ export function ContactPage() {
             Speak With Our Advisory Desk
           </h1>
           <p className="text-sm text-slate-500 mt-2">
-            Whether acquiring prime residential assets, seeking confidential valuations, or exploring commercial portfolios, our international partners are ready to assist.
+            Whether acquiring prime residential assets, seeking confidential valuations, or exploring investment opportunities, our advisors are ready to assist.
           </p>
         </div>
 
-        {/* Office Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          {offices.map((office) => (
-            <div
-              key={office.city}
-              className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm space-y-4"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-[#004274]/10 text-[#004274] flex items-center justify-center">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">{office.city}</h3>
-                  <span className="text-xs text-[#004274] font-medium">{office.country}</span>
-                </div>
+        {/* Office Details Card */}
+        <div className="max-w-md mx-auto mb-16">
+          <div className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-lg bg-[#004274]/10 text-[#004274] flex items-center justify-center">
+                <Building2 className="w-5 h-5" />
               </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">{office.city}</h3>
+              </div>
+            </div>
 
-              <div className="space-y-2 text-xs text-slate-600 pt-2 border-t border-slate-100">
+            <div className="space-y-2 text-xs text-slate-600 pt-2 border-t border-slate-100">
+              {office.address && (
                 <div className="flex items-start space-x-2">
                   <MapPin className="w-4 h-4 text-[#6fabca] shrink-0 mt-0.5" />
                   <span>{office.address}</span>
                 </div>
+              )}
+              {office.phone && (
                 <div className="flex items-center space-x-2">
                   <Phone className="w-4 h-4 text-[#6fabca] shrink-0" />
-                  <span>{office.phone}</span>
+                  <a href={`tel:${office.phone}`} className="hover:text-[#004274] transition">{office.phone}</a>
                 </div>
+              )}
+              {office.email && (
                 <div className="flex items-center space-x-2">
                   <Mail className="w-4 h-4 text-[#6fabca] shrink-0" />
-                  <span>{office.email}</span>
+                  <a href={`mailto:${office.email}`} className="hover:text-[#004274] transition">{office.email}</a>
                 </div>
+              )}
+              {office.hours && (
                 <div className="flex items-center space-x-2 text-slate-400">
                   <Clock className="w-4 h-4 shrink-0" />
                   <span>{office.hours}</span>
                 </div>
-              </div>
+              )}
             </div>
-          ))}
+          </div>
         </div>
 
         {/* Contact Form Container */}
@@ -177,7 +182,7 @@ export function ContactPage() {
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
                 >
                   <option value="Buying">Acquiring / Buying Property</option>
-                  <option value="Selling">Instructing PropertyOS to Sell</option>
+                  <option value="Selling">Instructing EstateElite to Sell</option>
                   <option value="Renting">Luxury Letting / Tenancy</option>
                   <option value="Institutional">Commercial & Institutional Investment</option>
                   <option value="Valuation">Valuation & Probate Services</option>
@@ -198,11 +203,28 @@ export function ContactPage() {
                 />
               </div>
 
+              {errorMessage && (
+                <div className="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
+                  {errorMessage}
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full py-3 bg-[#004274] hover:bg-[#00335a] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-sm"
+                disabled={isSubmitting}
+                className="w-full py-3 bg-[#004274] hover:bg-[#00335a] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-sm flex items-center justify-center space-x-2"
               >
-                Transmit Confidential Enquiry
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Transmitting Enquiry...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Transmit Confidential Enquiry</span>
+                  </>
+                )}
               </button>
             </form>
           )}

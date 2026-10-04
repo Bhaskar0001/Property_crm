@@ -129,6 +129,9 @@ export class ViewingService {
     customerName?: string;
     customerEmail?: string;
     customerPhone?: string;
+    visitType?: 'in_person' | 'virtual';
+    virtualPlatform?: 'whatsapp_video' | 'zoom' | 'google_meet' | 'facetime' | 'other';
+    meetingLink?: string;
     scheduledDate: string;
     scheduledTime?: string;
     duration?: number;
@@ -183,6 +186,9 @@ export class ViewingService {
       property: property._id,
       lead: leadId ? new mongoose.Types.ObjectId(leadId) : undefined,
       customer: customerId ? new mongoose.Types.ObjectId(customerId) : undefined,
+      visitType: data.visitType || 'in_person',
+      virtualPlatform: data.virtualPlatform || (data.visitType === 'virtual' ? 'whatsapp_video' : undefined),
+      meetingLink: data.meetingLink,
       scheduledDate: new Date(data.scheduledDate),
       scheduledTime: data.scheduledTime || '10:00',
       duration: data.duration || 30,
@@ -197,7 +203,7 @@ export class ViewingService {
       await LeadActivityModel.create({
         lead: leadId,
         type: 'viewing_scheduled',
-        description: `Viewing appointment scheduled for ${new Date(data.scheduledDate).toLocaleDateString()} at ${data.scheduledTime || '10:00'}.`,
+        description: `${data.visitType === 'virtual' ? `Virtual Video Tour (${data.virtualPlatform || 'WhatsApp Video'})` : 'Physical On-Site Viewing'} appointment scheduled for ${new Date(data.scheduledDate).toLocaleDateString()} at ${data.scheduledTime || '10:00'}.`,
         performedBy: user?._id,
         metadata: { viewingId: viewing._id, propertyTitle: property.title },
       });
@@ -235,6 +241,9 @@ export class ViewingService {
   async update(id: string, data: {
     scheduledDate?: string;
     scheduledTime?: string;
+    visitType?: 'in_person' | 'virtual';
+    virtualPlatform?: 'whatsapp_video' | 'zoom' | 'google_meet' | 'facetime' | 'other';
+    meetingLink?: string;
     duration?: number;
     assignedTo?: string;
     notes?: string;
@@ -247,6 +256,9 @@ export class ViewingService {
 
     if (data.scheduledDate) viewing.scheduledDate = new Date(data.scheduledDate);
     if (data.scheduledTime) viewing.scheduledTime = data.scheduledTime;
+    if (data.visitType) viewing.visitType = data.visitType;
+    if (data.virtualPlatform) viewing.virtualPlatform = data.virtualPlatform;
+    if (data.meetingLink !== undefined) viewing.meetingLink = data.meetingLink;
     if (data.duration) viewing.duration = data.duration;
     if (data.assignedTo) viewing.assignedTo = new mongoose.Types.ObjectId(data.assignedTo);
     if (data.notes !== undefined) viewing.notes = data.notes;

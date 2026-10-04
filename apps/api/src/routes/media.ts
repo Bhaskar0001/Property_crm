@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import {
   uploadMedia,
+  addEmbedMedia,
   getPropertyMedia,
   setCoverImage,
   reorderMedia,
@@ -12,7 +13,7 @@ import { authenticate, requirePermission } from '../middlewares/auth';
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15MB limit
+    fileSize: 100 * 1024 * 1024, // 100MB limit for high-res images, video tours, & large PDFs
   },
 });
 
@@ -24,6 +25,13 @@ mediaRouter.post(
   requirePermission('properties.media.upload'),
   upload.array('files', 20),
   uploadMedia
+);
+
+mediaRouter.post(
+  '/embed/:propertyId',
+  authenticate,
+  requirePermission('properties.media.upload'),
+  addEmbedMedia
 );
 
 mediaRouter.get(

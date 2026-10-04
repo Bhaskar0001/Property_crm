@@ -10,9 +10,12 @@
     "dev:api": "npm run dev --workspace=apps/api",
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:admin": "npm run dev --workspace=apps/admin",
+    "build": "npm run build:api && npm run build:admin && npm run build:web",
     "build:api": "npm run build --workspace=apps/api",
     "build:web": "npm run build --workspace=apps/web",
     "build:admin": "npm run build --workspace=apps/admin",
+    "seed": "npm run seed:all --workspace=apps/api",
+    "reset:admin": "npm run reset:admin --workspace=apps/api",
     "lint": "npm run lint --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present"
   },

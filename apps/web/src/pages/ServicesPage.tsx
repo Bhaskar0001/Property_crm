@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Building2, Key, TrendingUp, ShieldCheck, Briefcase, Award, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useValuation } from '../context/ValuationContext';
 
 export function ServicesPage() {
+  const { openValuationModal } = useValuation();
   const services = [
     {
       icon: <Building2 className="w-8 h-8 text-[#004274]" />,
@@ -83,7 +85,7 @@ export function ServicesPage() {
             Institutional Standards. Personal Discretion.
           </h1>
           <p className="text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed">
-            PropertyOS delivers full-spectrum real estate brokerage, asset management, and development advisory with complete transparency and regulatory integrity.
+            EstateElite delivers full-spectrum real estate brokerage, asset management, and development advisory with complete transparency and regulatory integrity.
           </p>
         </div>
       </section>
@@ -113,13 +115,24 @@ export function ServicesPage() {
                   ))}
                 </div>
               </div>
-              <Link
-                to="/contact"
-                className="inline-flex items-center text-xs font-bold text-[#004274] hover:text-[#6fabca] transition-colors"
-              >
-                <span>Instruct our advisory team</span>
-                <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-              </Link>
+              {svc.title.toLowerCase().includes('valuation') ? (
+                <button
+                  type="button"
+                  onClick={() => openValuationModal()}
+                  className="inline-flex items-center text-xs font-bold text-[#004274] hover:text-[#6fabca] transition-colors"
+                >
+                  <span>Request formal valuation</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                </button>
+              ) : (
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center text-xs font-bold text-[#004274] hover:text-[#6fabca] transition-colors"
+                >
+                  <span>Instruct our advisory team</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                </Link>
+              )}
             </div>
           ))}
         </div>
@@ -135,12 +148,13 @@ export function ServicesPage() {
             Speak directly with a senior partner for a strictly confidential consultation on your property requirements.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Link
-              to="/contact"
-              className="w-full sm:w-auto px-8 py-3 bg-[#004274] text-white text-sm font-bold rounded-lg hover:bg-[#002f53] shadow transition-colors"
+            <button
+              type="button"
+              onClick={() => openValuationModal()}
+              className="w-full sm:w-auto px-8 py-3 bg-[#004274] text-white text-sm font-bold rounded-lg hover:bg-[#002f53] shadow transition-colors cursor-pointer"
             >
               Request Confidential Consultation
-            </Link>
+            </button>
             <Link
               to="/properties"
               className="w-full sm:w-auto px-8 py-3 bg-white text-slate-800 text-sm font-bold rounded-lg border border-slate-300 hover:bg-slate-50 transition-colors"

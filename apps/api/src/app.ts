@@ -30,10 +30,12 @@ import {
   webhookRouter,
   analyticsRouter,
   aiRouter,
+  emailRouter,
 } from './routes';
 import { authService } from './services/auth.service';
 import { initializeSocket } from './config/socket';
 import { initializeQueues, closeAllQueues } from './config/queue';
+import { initializeWorkers, closeAllWorkers } from './jobs';
 
 const app = express();
 
@@ -45,15 +47,26 @@ app.use(cors({
 }));
 app.use(mongoSanitize());
 
-// Rate limiting
-const limiter = rateLimit({
+// Dual-tier Rate Limiting (OWASP Best Practice)
+const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: config.env === 'production' ? 1000 : 5000,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, error: { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests' } },
+  message: { success: false, error: { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests, please try again later.' } },
 });
-app.use('/api/', limiter);
+app.use('/api/', generalLimiter);
+
+// Strict Rate Limiting for Authentication & OTP Endpoints (Brute-force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: config.env === 'production' ? 25 : 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: { code: 'AUTH_RATE_LIMIT_EXCEEDED', message: 'Too many authentication attempts. Please wait 15 minutes.' } },
+});
+app.use('/api/v1/auth/login', authLimiter);
+app.use('/api/v1/customer/auth/', authLimiter);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -86,6 +99,7 @@ app.use('/api/v1/whatsapp', whatsappRouter);
 app.use('/api/v1/webhooks', webhookRouter);
 app.use('/api/v1/analytics', analyticsRouter);
 app.use('/api/v1/ai', aiRouter);
+app.use('/api/v1/email', emailRouter);
 
 // 404 handler
 app.use((_req, res) => {
@@ -110,13 +124,15 @@ const start = async () => {
       logger.info(`Health check available at http://localhost:${config.port}/api/v1/health`);
     });
 
-    // Real-time socket & BullMQ queues
+    // Real-time socket & BullMQ queues and workers
     initializeSocket(server);
     initializeQueues();
+    initializeWorkers();
 
     // Graceful shutdown
     const shutdown = async (signal: string) => {
       logger.info(`Received ${signal}. Shutting down gracefully...`);
+      await closeAllWorkers();
       await closeAllQueues();
       server.close(() => {
         logger.info('HTTP server closed');

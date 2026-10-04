@@ -17,3 +17,4 @@ export { whatsappRouter } from './whatsapp';
 export { webhookRouter } from './webhook';
 export { analyticsRouter } from './analytics';
 export { aiRouter } from './ai';
+export { emailRouter } from './email';

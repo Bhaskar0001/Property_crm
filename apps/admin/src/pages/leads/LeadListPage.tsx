@@ -14,8 +14,10 @@ import {
 import { useLeads, useCreateLead, useChangeLeadStage } from '../../hooks/useLeads';
 import { useLeadStages, useLeadSources } from '../../hooks/useAdminConfig';
 import { Lead } from '../../types/lead';
+import { useCountryFilter } from '../../context/CountryFilterContext';
 
 export function LeadListPage() {
+  const { selectedCountryId } = useCountryFilter();
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
   const [search, setSearch] = useState('');
   const [selectedStage, setSelectedStage] = useState('');
@@ -33,6 +35,7 @@ export function LeadListPage() {
     stage: selectedStage || undefined,
     source: selectedSource || undefined,
     priority: selectedPriority || undefined,
+    country: selectedCountryId !== 'all' ? selectedCountryId : undefined,
     limit: 100,
   });
 
@@ -345,7 +348,15 @@ export function LeadListPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-gray-700">
-              {leads.map((lead) => (
+              {leads.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <p className="font-semibold text-gray-700">No leads found in pipeline</p>
+                    <p className="text-xs text-gray-400 mt-1">New client booking inquiries from the website or chatbot will stream here automatically.</p>
+                  </td>
+                </tr>
+              ) : (
+                leads.map((lead) => (
                 <tr key={lead._id} className="hover:bg-gray-50/80 transition-colors">
                   <td className="px-6 py-4">
                     <Link
@@ -392,7 +403,7 @@ export function LeadListPage() {
                     </Link>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

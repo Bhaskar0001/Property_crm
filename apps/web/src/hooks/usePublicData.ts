@@ -5,6 +5,7 @@ import {
   PropertyDetailResponse,
   PublicCountry,
   PublicPropertyType,
+  PublicListingType,
   PublicPropertiesFilter,
 } from '../types';
 
@@ -73,3 +74,46 @@ export function usePublicPropertyTypes() {
     },
   });
 }
+
+export function usePublicListingTypes() {
+  return useQuery({
+    queryKey: ['public-listing-types'],
+    queryFn: async (): Promise<PublicListingType[]> => {
+      const response = await publicApi.get('/listing-types');
+      return response.data.data;
+    },
+  });
+}
+
+export function usePublicFeatures() {
+  return useQuery({
+    queryKey: ['public-features'],
+    queryFn: async (): Promise<any[]> => {
+      const response = await publicApi.get('/features');
+      return response.data.data;
+    },
+  });
+}
+
+export interface ContactInfo {
+  phone: string;
+  whatsapp: string;
+  whatsappClean: string;
+  email: string;
+  officeHours: string;
+  videoConsultationUrl: string;
+  companyName: string;
+  address: string;
+}
+
+export function useContactInfo() {
+  return useQuery({
+    queryKey: ['public-contact-info'],
+    queryFn: async (): Promise<ContactInfo> => {
+      const response = await publicApi.get('/contact-info');
+      return response.data.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
