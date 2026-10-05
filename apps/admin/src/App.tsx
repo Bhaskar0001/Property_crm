@@ -5,7 +5,6 @@ import { CountryFilterProvider } from './context/CountryFilterContext';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { LoginPage } from './pages/auth/LoginPage';
-import { ForceChangePasswordPage } from './pages/auth/ForceChangePasswordPage';
 import { PropertyListPage } from './pages/properties/PropertyListPage';
 import { PropertyFormPage } from './pages/properties/PropertyFormPage';
 import { PropertyMediaPage } from './pages/properties/PropertyMediaPage';
@@ -42,7 +41,7 @@ function App() {
           <Routes>
             {/* Public Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/force-change-password" element={<ForceChangePasswordPage />} />
+            <Route path="/force-change-password" element={<Navigate to="/" replace />} />
 
             {/* Main Application with Sidebar & Header Layout */}
             <Route path="/" element={<DashboardLayout />}>

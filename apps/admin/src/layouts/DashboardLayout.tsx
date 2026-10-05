@@ -163,10 +163,10 @@ export function DashboardLayout() {
               </div>
               <button
                 onClick={logout}
-                className="ml-2 rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-red-500 transition-colors"
+                className="p-1.5 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors"
                 title="Logout"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4" />
               </button>
             </div>
           </div>

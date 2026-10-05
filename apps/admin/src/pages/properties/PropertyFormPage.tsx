@@ -150,6 +150,19 @@ export function PropertyFormPage() {
     }
   }, [property, isEdit]);
 
+  useEffect(() => {
+    if (!isEdit) {
+      setFormData((prev: any) => ({
+        ...prev,
+        country: prev.country || (countries && countries.length > 0 ? (countries.find((c: any) => c.isoCode === 'IE')?._id || countries[0]._id) : ''),
+        propertyType: prev.propertyType || (propertyTypes && propertyTypes.length > 0 ? propertyTypes[0]._id : ''),
+        listingType: prev.listingType || (listingTypes && listingTypes.length > 0 ? listingTypes[0]._id : ''),
+        status: prev.status || (statuses && statuses.length > 0 ? statuses[0]._id : ''),
+        currency: prev.currency || (currencies && currencies.length > 0 ? (currencies.find((c: any) => c.code === 'EUR')?._id || currencies[0]._id) : ''),
+      }));
+    }
+  }, [countries, propertyTypes, listingTypes, statuses, currencies, isEdit]);
+
   const handleChange = (field: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
@@ -167,8 +180,14 @@ export function PropertyFormPage() {
   };
 
   const handleSubmit = async (publishImmediately?: boolean) => {
-    const payload = {
+    if (!formData.title || !formData.title.trim()) {
+      alert('Please enter a Property Title before saving.');
+      return;
+    }
+
+    const payload: any = {
       ...formData,
+      title: formData.title.trim(),
       price: formData.price ? Number(formData.price) : undefined,
       bedrooms: formData.bedrooms ? Number(formData.bedrooms) : undefined,
       bathrooms: formData.bathrooms ? Number(formData.bathrooms) : undefined,
@@ -183,6 +202,13 @@ export function PropertyFormPage() {
       isPublished: publishImmediately !== undefined ? publishImmediately : formData.isPublished,
     };
 
+    // Clean up empty strings for optional references so backend validation passes smoothly
+    ['country', 'propertyType', 'listingType', 'tenure', 'status', 'currency'].forEach((key) => {
+      if (!payload[key] || payload[key] === '') {
+        delete payload[key];
+      }
+    });
+
     try {
       if (isEdit) {
         await updateMutation.mutateAsync({ id: id!, payload });
@@ -193,7 +219,15 @@ export function PropertyFormPage() {
       }
       navigate('/properties');
     } catch (err: any) {
-      alert(err.response?.data?.error?.message || 'Failed to save property');
+      const details = err.response?.data?.error?.details;
+      if (details && typeof details === 'object') {
+        const messages = Object.entries(details)
+          .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : errs}`)
+          .join('\n');
+        alert(`Validation Error:\n${messages}`);
+      } else {
+        alert(err.response?.data?.error?.message || err.message || 'Failed to save property');
+      }
     }
   };
 

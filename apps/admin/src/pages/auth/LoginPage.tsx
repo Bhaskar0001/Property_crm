@@ -30,7 +30,7 @@ export function LoginPage() {
         throw new Error('Login failed: user profile not found in response');
       }
       login(userData, accessToken);
-      navigate(userData.mustChangePassword || userData.needsPasswordChange ? '/force-change-password' : '/');
+      navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to log in');
     } finally {

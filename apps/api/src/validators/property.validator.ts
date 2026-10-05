@@ -1,33 +1,58 @@
 import { z } from 'zod';
 
+const optionalObjectId = z.preprocess(
+  (val) => (val === '' || val === null || val === undefined ? undefined : val),
+  z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid MongoDB ID').optional()
+);
+
+const optionalNumber = z.preprocess(
+  (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
+  z.number().optional()
+);
+
+const optionalBoolean = z.preprocess(
+  (val) => (val === '' || val === null || val === undefined ? undefined : val === true || val === 'true'),
+  z.boolean().optional()
+);
+
+const furnishedSchema = z.preprocess(
+  (val) => {
+    if (typeof val === 'boolean') {
+      return val ? 'fully_furnished' : 'unfurnished';
+    }
+    return val === '' || val === null || val === undefined ? undefined : val;
+  },
+  z.enum(['unfurnished', 'partly_furnished', 'fully_furnished']).optional()
+);
+
 export const createPropertySchema = z.object({
-  title: z.string().min(3),
-  country: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid MongoDB ID'),
-  propertyType: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid MongoDB ID'),
-  listingType: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid MongoDB ID'),
-  status: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid MongoDB ID'),
-  price: z.number().optional(),
-  currency: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid MongoDB ID').optional(),
-  priceOnRequest: z.boolean().optional(),
+  title: z.string().min(1, 'Property title is required'),
+  country: optionalObjectId,
+  propertyType: optionalObjectId,
+  listingType: optionalObjectId,
+  status: optionalObjectId,
+  price: optionalNumber,
+  currency: optionalObjectId,
+  priceOnRequest: optionalBoolean,
   internalReference: z.string().optional(),
   region: z.string().optional(),
   city: z.string().optional(),
   area: z.string().optional(),
   address: z.string().optional(),
   postalCode: z.string().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  tenure: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid MongoDB ID').optional(),
-  bedrooms: z.number().optional(),
-  bathrooms: z.number().optional(),
-  livingArea: z.number().optional(),
-  plotArea: z.number().optional(),
-  floor: z.number().optional(),
-  totalFloors: z.number().optional(),
-  parking: z.boolean().optional(),
-  parkingSpaces: z.number().optional(),
-  yearBuilt: z.number().optional(),
-  furnished: z.boolean().optional(),
+  latitude: optionalNumber,
+  longitude: optionalNumber,
+  tenure: optionalObjectId,
+  bedrooms: optionalNumber,
+  bathrooms: optionalNumber,
+  livingArea: optionalNumber,
+  plotArea: optionalNumber,
+  floor: optionalNumber,
+  totalFloors: optionalNumber,
+  parking: optionalBoolean,
+  parkingSpaces: optionalNumber,
+  yearBuilt: optionalNumber,
+  furnished: furnishedSchema,
   condition: z.string().optional(),
   heating: z.string().optional(),
   berRating: z.string().optional(),
@@ -36,20 +61,28 @@ export const createPropertySchema = z.object({
   propertyRegistration: z.string().optional(),
   description: z.string().optional(),
   shortDescription: z.string().optional(),
-  features: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid MongoDB ID')).optional(),
-  isPublished: z.boolean().optional(),
-  isFeatured: z.boolean().optional(),
-  isVisibleInSearch: z.boolean().optional(),
-  showPrice: z.boolean().optional(),
-  showAddress: z.boolean().optional(),
-  showMap: z.boolean().optional(),
-  showWhatsApp: z.boolean().optional(),
-  showEnquiry: z.boolean().optional(),
-  showViewingRequest: z.boolean().optional(),
+  videoUrl: z.string().optional(),
+  virtualTourUrl: z.string().optional(),
+  floorPlanUrl: z.string().optional(),
+  brochureUrl: z.string().optional(),
+  coverImage: z.string().optional(),
+  features: z.preprocess(
+    (val) => (Array.isArray(val) ? val.filter((v) => typeof v === 'string' && /^[0-9a-fA-F]{24}$/.test(v)) : []),
+    z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid MongoDB ID')).optional()
+  ),
+  isPublished: optionalBoolean,
+  isFeatured: optionalBoolean,
+  isVisibleInSearch: optionalBoolean,
+  showPrice: optionalBoolean,
+  showAddress: optionalBoolean,
+  showMap: optionalBoolean,
+  showWhatsApp: optionalBoolean,
+  showEnquiry: optionalBoolean,
+  showViewingRequest: optionalBoolean,
   seoTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   ogImage: z.string().optional(),
-  includedInSitemap: z.boolean().optional(),
+  includedInSitemap: optionalBoolean,
 });
 
 export const updatePropertySchema = createPropertySchema.deepPartial();

@@ -33,10 +33,15 @@ export class EmailService {
       </div>
     `;
 
+    const fromAddress =
+      config.resend.mailFrom && !config.resend.mailFrom.includes('example.com')
+        ? config.resend.mailFrom
+        : 'onboarding@resend.dev';
+
     if (this.resend) {
       try {
         const { error } = await this.resend.emails.send({
-          from: config.resend.mailFrom,
+          from: fromAddress,
           to: [email],
           subject,
           html,
