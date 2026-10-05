@@ -16,8 +16,6 @@ import {
   ChevronRight,
   HelpCircle,
 } from 'lucide-react';
-import { LuxuryEmblem } from '../common/LuxuryEmblem';
-import { EnterpriseChatIcon } from '../common/EnterpriseChatIcon';
 import { DirectCallModal } from '../communication/DirectCallModal';
 import { ChatBookingModal } from './ChatBookingModal';
 import { useContactInfo } from '../../hooks/usePublicData';
@@ -167,10 +165,15 @@ export const PropertyAIChatbot: React.FC = () => {
       });
 
       const responseData = res.data?.data;
+      const rawReply = responseData?.reply || "Thank you for your inquiry. Our advisory desk is reviewing your requirements.";
+      const cleanReply = rawReply
+        .replace(/EstateElite/gi, 'AbroadAccommodation')
+        .replace(/Property\s*OS/gi, 'AbroadAccommodation');
+
       const advisorMsg: Message = {
         id: String(Date.now() + 1),
         role: 'advisor',
-        text: responseData?.reply || "Thank you for your inquiry. Our advisory desk is reviewing your requirements.",
+        text: cleanReply,
         matchedProperties: responseData?.matchedProperties || [],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
@@ -266,7 +269,7 @@ export const PropertyAIChatbot: React.FC = () => {
             aria-label="Chat with Property Advisor"
             title="Chat with Property Advisor"
           >
-            <EnterpriseChatIcon size="sm" variant="gold" className="transition-transform group-hover:scale-110" />
+            <img src="/logo.png" alt="" className="w-5 h-5 object-contain rounded bg-white p-0.5 transition-transform group-hover:scale-110 shadow-xs" />
             <span className="text-xs font-bold tracking-wide text-amber-100">
               Chat with Advisor
             </span>
@@ -288,8 +291,8 @@ export const PropertyAIChatbot: React.FC = () => {
           <div className="bg-gradient-to-r from-slate-950 via-[#001e3d] to-slate-950 text-white p-4.5 px-5 flex items-center justify-between border-b border-amber-500/30">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-10 h-10 rounded-2xl bg-slate-900 border border-amber-400/50 flex items-center justify-center shadow-lg shadow-amber-950/30">
-                  <LuxuryEmblem size="sm" variant="gold" />
+                <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-md p-1">
+                  <img src="/logo.png" alt="AbroadAccommodation" className="w-full h-full object-contain" />
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-slate-950" />
               </div>
@@ -423,7 +426,7 @@ export const PropertyAIChatbot: React.FC = () => {
                 {/* Advisor Header Tag */}
                 {msg.role === 'advisor' && (
                   <div className="flex items-center gap-1.5 mb-1.5 pl-1 text-[11px] font-bold text-slate-700">
-                    <LuxuryEmblem size="xs" variant="gold" />
+                    <img src="/logo.png" alt="AbroadAccommodation" className="w-4 h-4 object-contain rounded bg-white p-0.5 border border-slate-200" />
                     <span>AbroadAccommodation Senior Advisory Desk</span>
                   </div>
                 )}
@@ -569,7 +572,7 @@ export const PropertyAIChatbot: React.FC = () => {
             {/* In-Transit Typing Indicator */}
             {isLoading && (
               <div className="flex items-center gap-2 p-3.5 rounded-2xl bg-white border border-slate-200 max-w-[130px] shadow-xs">
-                <LuxuryEmblem size="xs" variant="gold" />
+                <img src="/logo.png" alt="AbroadAccommodation" className="w-4 h-4 object-contain rounded animate-pulse" />
                 <span className="text-[11px] text-slate-500 font-medium">Consulting...</span>
               </div>
             )}
