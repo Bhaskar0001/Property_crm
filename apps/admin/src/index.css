@@ -4,6 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Reset default Leaflet icon background and border */
+.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;

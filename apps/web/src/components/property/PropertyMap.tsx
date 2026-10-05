@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import {
@@ -17,7 +17,7 @@ import {
 import { PublicProperty } from '../../types';
 
 interface PropertyMapProps {
-  properties: PublicProperty[];
+  properties?: PublicProperty[];
   hoveredPropertyId?: string | null;
   selectedPropertyId?: string | null;
   onPropertyHover?: (id: string | null) => void;
@@ -29,13 +29,13 @@ interface PropertyMapProps {
 }
 
 export function PropertyMap({
-  properties,
+  properties = [],
   hoveredPropertyId,
   selectedPropertyId,
   onPropertyHover,
   onPropertySelect,
   onBoundsChange,
-  searchAsMapMoves = true,
+  searchAsMapMoves = false,
   onToggleSearchAsMapMoves,
   className = '',
 }: PropertyMapProps) {
@@ -47,9 +47,18 @@ export function PropertyMap({
   const [isLocating, setIsLocating] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Keep latest callbacks/states in refs to prevent stale closure inside Leaflet listeners
+  const searchAsMapMovesRef = useRef(searchAsMapMoves);
+  searchAsMapMovesRef.current = searchAsMapMoves;
+  const onBoundsChangeRef = useRef(onBoundsChange);
+  onBoundsChangeRef.current = onBoundsChange;
+  const isProgrammaticMoveRef = useRef(false);
+
   // Filter properties with valid numeric coordinates
-  const geoProperties = properties.filter(
+  const safeProperties = properties || [];
+  const geoProperties = safeProperties.filter(
     (p) =>
+      p &&
       typeof p.latitude === 'number' &&
       !isNaN(p.latitude) &&
       typeof p.longitude === 'number' &&
@@ -59,7 +68,7 @@ export function PropertyMap({
   );
 
   // Format currency price pill
-  const formatPillPrice = (p: PublicProperty) => {
+  const formatPillPrice = useCallback((p: PublicProperty) => {
     const symbol = p.currency?.symbol || '€';
     const price = p.price || 0;
     if (price >= 1_000_000) {
@@ -68,40 +77,47 @@ export function PropertyMap({
     if (price >= 1_000) {
       return `${symbol}${Math.round(price / 1_000)}k`;
     }
-    return `${symbol}${price}`;
-  };
+    return `${symbol}${price.toLocaleString()}`;
+  }, []);
 
   // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
-      // Default to Amsterdam / European view
+      // Default initial view: Center on Dublin / Europe
       const map = L.map(mapContainerRef.current, {
-        center: [52.3676, 4.9041],
+        center: [53.3498, -6.2603],
         zoom: 12,
-        zoomControl: false, // We'll render custom sleek zoom controls
+        zoomControl: false,
         attributionControl: false,
       });
 
-      // CartoDB Positron: clean, modern, high contrast light basemap
+      // CartoDB Positron basemap with OpenStreetMap fallback
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
         subdomains: 'abcd',
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
       }).addTo(map);
 
-      // Add attribution in compact corner
+      // Attribution
       L.control
         .attribution({ position: 'bottomright', prefix: false })
-        .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>')
+        .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>')
         .addTo(map);
 
       // Listen to map moveend for "Search as I move the map"
       map.on('moveend', () => {
+        if (isProgrammaticMoveRef.current) {
+          isProgrammaticMoveRef.current = false;
+          return;
+        }
+
         setMapMoved(true);
-        if (searchAsMapMoves && onBoundsChange) {
+
+        if (searchAsMapMovesRef.current && onBoundsChangeRef.current) {
           const bounds = map.getBounds();
-          onBoundsChange({
+          onBoundsChangeRef.current({
             neLat: bounds.getNorthEast().lat,
             neLng: bounds.getNorthEast().lng,
             swLat: bounds.getSouthWest().lat,
@@ -111,10 +127,29 @@ export function PropertyMap({
       });
 
       mapInstanceRef.current = map;
+
+      // Invalidate size after layout settles
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 150);
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 500);
+    }
+
+    // ResizeObserver ensures Leaflet updates whenever container size changes
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
+
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current);
     }
 
     return () => {
-      // Clean up map on unmount
+      resizeObserver.disconnect();
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -122,7 +157,9 @@ export function PropertyMap({
     };
   }, []);
 
-  // Update Markers when properties change
+  // Update Markers when geoProperties change
+  const propertySignature = geoProperties.map((p) => `${p._id}:${p.latitude}:${p.longitude}:${p.price}`).join('|');
+
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -145,7 +182,7 @@ export function PropertyMap({
       const isHovered = hoveredPropertyId === property._id;
       const isSelected = selectedPropertyId === property._id;
 
-      // Custom DivIcon matching the user's screenshot
+      // Custom DivIcon
       const icon = L.divIcon({
         className: 'leaflet-price-pin',
         html: `
@@ -162,8 +199,8 @@ export function PropertyMap({
             <span>${priceText}</span>
           </button>
         `,
-        iconSize: [60, 28],
-        iconAnchor: [30, 14],
+        iconSize: [64, 28],
+        iconAnchor: [32, 14],
       });
 
       const marker = L.marker(latLng, { icon }).addTo(map);
@@ -172,7 +209,7 @@ export function PropertyMap({
       marker.on('click', () => {
         setActivePopupProperty(property);
         if (onPropertySelect) onPropertySelect(property._id);
-        map.panTo(latLng, { animate: true, duration: 0.5 });
+        map.panTo(latLng, { animate: true, duration: 0.4 });
       });
 
       marker.on('mouseover', () => {
@@ -188,11 +225,16 @@ export function PropertyMap({
 
     // Auto-fit bounds if we have markers and user hasn't actively dragged the map
     if (bounds.isValid() && !mapMoved) {
-      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+      isProgrammaticMoveRef.current = true;
+      if (geoProperties.length === 1) {
+        map.setView(bounds.getCenter(), 14, { animate: false });
+      } else {
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: false });
+      }
     }
-  }, [geoProperties.length, hoveredPropertyId, selectedPropertyId]);
+  }, [propertySignature, formatPillPrice, onPropertyHover, onPropertySelect]);
 
-  // Update marker styles when hover changes without recreating markers
+  // Update marker styles when hover or selection changes (without recreating markers)
   useEffect(() => {
     markersRef.current.forEach((marker, id) => {
       const el = marker.getElement();
@@ -216,9 +258,9 @@ export function PropertyMap({
   // Handle Search This Area Click
   const handleSearchThisArea = () => {
     const map = mapInstanceRef.current;
-    if (!map || !onBoundsChange) return;
+    if (!map || !onBoundsChangeRef.current) return;
     const bounds = map.getBounds();
-    onBoundsChange({
+    onBoundsChangeRef.current({
       neLat: bounds.getNorthEast().lat,
       neLng: bounds.getNorthEast().lng,
       swLat: bounds.getSouthWest().lat,
@@ -247,7 +289,7 @@ export function PropertyMap({
       (pos) => {
         setIsLocating(false);
         const { latitude, longitude } = pos.coords;
-        mapInstanceRef.current?.flyTo([latitude, longitude], 13, { duration: 1.5 });
+        mapInstanceRef.current?.flyTo([latitude, longitude], 13, { duration: 1.2 });
       },
       () => {
         setIsLocating(false);
@@ -263,7 +305,12 @@ export function PropertyMap({
     const bounds = L.latLngBounds([]);
     geoProperties.forEach((p) => bounds.extend([p.latitude!, p.longitude!]));
     if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+      isProgrammaticMoveRef.current = true;
+      if (geoProperties.length === 1) {
+        map.setView(bounds.getCenter(), 14, { animate: true });
+      } else {
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true });
+      }
       setMapMoved(false);
     }
   };
@@ -289,7 +336,7 @@ export function PropertyMap({
       {/* Map Container */}
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-      {/* Floating Top Center: Search As I Move The Map (Matching Screenshot 1) */}
+      {/* Floating Top Center: Search As I Move The Map */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] flex items-center space-x-2">
         <label
           htmlFor="search-as-move"
@@ -338,14 +385,16 @@ export function PropertyMap({
           <Navigation className={`w-4 h-4 ${isLocating ? 'animate-spin text-[#004274]' : ''}`} />
         </button>
 
-        <button
-          type="button"
-          onClick={handleFitAll}
-          title="Fit all properties"
-          className="w-9 h-9 bg-white/95 backdrop-blur-md rounded-lg shadow-md border border-slate-200 flex items-center justify-center text-slate-700 hover:text-[#004274] hover:bg-white transition text-xs font-bold"
-        >
-          ALL
-        </button>
+        {geoProperties.length > 0 && (
+          <button
+            type="button"
+            onClick={handleFitAll}
+            title="Fit all properties"
+            className="w-9 h-9 bg-white/95 backdrop-blur-md rounded-lg shadow-md border border-slate-200 flex items-center justify-center text-slate-700 hover:text-[#004274] hover:bg-white transition text-xs font-bold"
+          >
+            ALL
+          </button>
+        )}
 
         <div className="flex flex-col bg-white/95 backdrop-blur-md rounded-lg shadow-md border border-slate-200 overflow-hidden divide-y divide-slate-100">
           <button

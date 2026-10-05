@@ -52,7 +52,7 @@ export function PropertyListingPage() {
   // Map state
   const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-  const [searchAsMapMoves, setSearchAsMapMoves] = useState(true);
+  const [searchAsMapMoves, setSearchAsMapMoves] = useState(false);
   const [mapBounds, setMapBounds] = useState<{
     neLat: number;
     neLng: number;
@@ -174,6 +174,13 @@ export function PropertyListingPage() {
     swLng: number;
   }) => {
     setMapBounds(bounds);
+  };
+
+  const handleToggleSearchAsMapMoves = (enabled: boolean) => {
+    setSearchAsMapMoves(enabled);
+    if (!enabled) {
+      setMapBounds(null);
+    }
   };
 
   return (
@@ -385,7 +392,7 @@ export function PropertyListingPage() {
         /* 1. Split View Mode (Matching Screenshot 1: Left Cards, Right Interactive Map) */
         <div className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-4.25rem)] overflow-hidden">
           {/* Left Column: Property Cards Feed */}
-          <div className="w-full lg:w-[480px] xl:w-[540px] flex flex-col h-full bg-white border-r border-slate-200">
+          <div className="w-full lg:w-[480px] xl:w-[540px] flex flex-col h-1/2 lg:h-full bg-white border-r border-slate-200">
             {/* Results Count & Sort Header */}
             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
               <div>
@@ -554,7 +561,7 @@ export function PropertyListingPage() {
           </div>
 
           {/* Right Column: Interactive Real Leaflet Map */}
-          <div className="flex-1 h-full relative">
+          <div className="flex-1 h-1/2 lg:h-full relative">
             <PropertyMap
               properties={properties}
               hoveredPropertyId={hoveredPropertyId}
@@ -563,7 +570,7 @@ export function PropertyListingPage() {
               onPropertySelect={setSelectedPropertyId}
               onBoundsChange={handleBoundsChange}
               searchAsMapMoves={searchAsMapMoves}
-              onToggleSearchAsMapMoves={setSearchAsMapMoves}
+              onToggleSearchAsMapMoves={handleToggleSearchAsMapMoves}
               className="h-full rounded-none border-0"
             />
           </div>
@@ -628,7 +635,7 @@ export function PropertyListingPage() {
             onPropertySelect={setSelectedPropertyId}
             onBoundsChange={handleBoundsChange}
             searchAsMapMoves={searchAsMapMoves}
-            onToggleSearchAsMapMoves={setSearchAsMapMoves}
+            onToggleSearchAsMapMoves={handleToggleSearchAsMapMoves}
             className="h-full rounded-none border-0"
           />
         </div>

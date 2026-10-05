@@ -28,6 +28,7 @@ import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useFavorites, useToggleFavorite, useSubmitEnquiry } from '../hooks/useCustomerData';
 import { useCurrency } from '../context/CurrencyContext';
 import { OfferSubmissionModal } from '../components/property/OfferSubmissionModal';
+import { SinglePropertyMap } from '../components/property/SinglePropertyMap';
 import { publicApi } from '../lib/api';
 
 export function PropertyDetailPage() {
@@ -561,6 +562,19 @@ export function PropertyDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Interactive Location & Neighborhood Map */}
+            <SinglePropertyMap
+              latitude={property.latitude}
+              longitude={property.longitude}
+              title={property.title}
+              address={property.address}
+              area={property.area}
+              city={property.city}
+              country={property.country?.name}
+              price={property.price}
+              currencySymbol={property.currency?.symbol || '€'}
+            />
           </div>
 
           {/* Right Column: Contact & Viewing Action Card */}
