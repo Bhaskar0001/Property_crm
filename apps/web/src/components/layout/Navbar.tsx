@@ -8,7 +8,6 @@ import { usePublicCountries, useContactInfo } from '../../hooks/usePublicData';
 import { CountryTickerSlider } from '../home/CountryTickerSlider';
 import { WORLD_COUNTRIES } from '@repo/shared';
 import { CountryFlag } from '../common/CountryFlag';
-import { LuxuryEmblem } from '../common/LuxuryEmblem';
 
 export function Navbar() {
   const { customer, openLoginModal } = useCustomerAuth();

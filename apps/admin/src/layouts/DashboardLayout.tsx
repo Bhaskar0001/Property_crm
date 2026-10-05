@@ -5,7 +5,6 @@ import { LayoutDashboard, Home, Users, MessageSquare, Calendar, Tag, UserCheck, 
 import { NotificationBell } from '../components/notifications/NotificationBell';
 import { useCountryFilter } from '../context/CountryFilterContext';
 import { CountryFlag } from '../components/common/CountryFlag';
-import { LuxuryEmblem } from '../components/common/LuxuryEmblem';
 
 interface NavItem {
   to: string;

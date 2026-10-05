@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
-import { LuxuryEmblem } from '../common/LuxuryEmblem';
 import { useContactInfo } from '../../hooks/usePublicData';
 
 export function Footer() {
