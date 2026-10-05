@@ -145,15 +145,17 @@ export function Navbar() {
         <div className="flex items-center justify-between h-20">
           {/* Brand Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-950 via-[#002244] to-slate-900 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-blue-950/20 group-hover:border-amber-400/60 transition-all duration-300">
-              <LuxuryEmblem size="sm" variant="gold" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="AbroadAccommodation"
+              className="w-10 h-10 object-contain rounded-lg shadow-sm"
+            />
             <div className="flex flex-col">
-              <span className="text-xl font-extrabold tracking-tight text-slate-900 uppercase">
-                Estate<span className="text-[#004274]">Elite</span>
+              <span className="text-xl font-extrabold tracking-tight text-slate-900">
+                Abroad<span className="text-[#004274]">Accommodation</span>
               </span>
               <span className="text-[10px] uppercase tracking-widest text-amber-700 font-bold -mt-0.5">
-                International Realty
+                International Living & Real Estate
               </span>
             </div>
           </Link>

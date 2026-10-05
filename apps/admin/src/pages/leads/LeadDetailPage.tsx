@@ -99,9 +99,9 @@ export function LeadDetailPage() {
   const whatsappNumber = lead.customer?.phone?.replace(/\D/g, '');
   const whatsappUrl = whatsappNumber
     ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-        `Hello ${lead.customer?.name || ''}, this is regarding your inquiry with EstateElite.`
+        `Hello ${lead.customer?.name || ''}, this is regarding your inquiry with AbroadAccommodation.`
       )}`
-    : `https://wa.me/?text=${encodeURIComponent(`Hello ${lead.customer?.name || ''}, this is EstateElite.`)}`;
+    : `https://wa.me/?text=${encodeURIComponent(`Hello ${lead.customer?.name || ''}, this is AbroadAccommodation.`)}`;
 
   return (
     <div className="space-y-6">

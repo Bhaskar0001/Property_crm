@@ -214,7 +214,7 @@ export const AdvisoryContactManager: React.FC = () => {
                   type="text"
                   value={formData.companyName}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  placeholder="EstateElite Private Advisory"
+                  placeholder="AbroadAccommodation Private Advisory"
                   className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>

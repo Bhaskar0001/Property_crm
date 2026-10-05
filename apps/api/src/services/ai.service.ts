@@ -104,7 +104,7 @@ Features: ${featuresList}`;
 
     // High quality deterministic fallback
     const shortDescription = `Exquisitely presented ${data.bedrooms || 3}-bedroom ${data.propertyType?.toLowerCase() || 'residence'} situated in the sought-after enclave of ${data.area || data.city}.`;
-    const description = `EstateElite is delighted to present this impressive ${data.bedrooms || 3}-bedroom ${data.propertyType?.toLowerCase() || 'home'} located in the prime district of ${data.city}.\n\nLight-filled interiors spanning ${data.livingArea ? `${data.livingArea} sq m` : 'generous proportions'} seamlessly connect refined living zones with modern convenience. The master suite features expansive storage, while additional bedrooms provide peaceful versatility for family living or a dedicated home workspace.\n\nPositioned within moments of premium lifestyle amenities, esteemed schools, and rapid transport links, this residence offers an exceptional opportunity for discerning purchasers seeking lasting value.`;
+    const description = `AbroadAccommodation is delighted to present this impressive ${data.bedrooms || 3}-bedroom ${data.propertyType?.toLowerCase() || 'home'} located in the prime district of ${data.city}.\n\nLight-filled interiors spanning ${data.livingArea ? `${data.livingArea} sq m` : 'generous proportions'} seamlessly connect refined living zones with modern convenience. The master suite features expansive storage, while additional bedrooms provide peaceful versatility for family living or a dedicated home workspace.\n\nPositioned within moments of premium lifestyle amenities, esteemed schools, and rapid transport links, this residence offers an exceptional opportunity for discerning purchasers seeking lasting value.`;
     const keyHighlights = [
       `Prime address in ${data.area || data.city}`,
       `${data.bedrooms || 3} Generous Bedrooms & ${data.bathrooms || 2} Bathrooms`,
@@ -299,7 +299,7 @@ Total Sales Agreed Volume: €${totalDealVolume.toLocaleString()} (${offers.leng
 User Question: "${question}"
 Provide a direct, factual answer based strictly on the metrics above in 2-3 sentences.`;
 
-      const aiAnswer = await this.callGemini('You are EstateElite Advisory Copilot.', prompt, 0.2);
+      const aiAnswer = await this.callGemini('You are AbroadAccommodation Advisory Copilot.', prompt, 0.2);
       if (aiAnswer) {
         return { answer: aiAnswer.trim(), metrics };
       }

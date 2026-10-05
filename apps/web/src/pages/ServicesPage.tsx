@@ -85,7 +85,7 @@ export function ServicesPage() {
             Institutional Standards. Personal Discretion.
           </h1>
           <p className="text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed">
-            EstateElite delivers full-spectrum real estate brokerage, asset management, and development advisory with complete transparency and regulatory integrity.
+            AbroadAccommodation delivers full-spectrum real estate brokerage, asset management, and development advisory with complete transparency and regulatory integrity.
           </p>
         </div>
       </section>

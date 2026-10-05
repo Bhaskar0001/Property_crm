@@ -176,7 +176,7 @@ export const DirectCallModal: React.FC<DirectCallModalProps> = ({ isOpen, onClos
     try {
       await publicApi.post('/customer/enquiries', {
         name: name.trim() || 'Direct Callback Lead',
-        email: `${phone.replace(/[^0-9]/g, '')}@lead.estateelite.com`,
+        email: `${phone.replace(/[^0-9]/g, '')}@lead.AbroadAccommodation.com`,
         phone: phone.trim(),
         type: 'general',
         visitType: activeTab === 'video' ? 'virtual' : 'in_person',
@@ -213,7 +213,7 @@ export const DirectCallModal: React.FC<DirectCallModalProps> = ({ isOpen, onClos
                 </span>
               </div>
               <h3 className="text-2xl font-black tracking-tight text-white mt-3">{adminPhone}</h3>
-              <p className="text-xs text-slate-300 font-medium">EstateElite Luxury Real Estate Advisory</p>
+              <p className="text-xs text-slate-300 font-medium">AbroadAccommodation Luxury Real Estate Advisory</p>
               
               {callState === 'connected' && (
                 <div className="text-sm font-mono font-bold text-emerald-400 pt-1">
@@ -476,7 +476,7 @@ export const DirectCallModal: React.FC<DirectCallModalProps> = ({ isOpen, onClos
                   <div className="space-y-3">
                     <a
                       href={`https://wa.me/${cleanWhatsApp}?text=${encodeURIComponent(
-                        `Hello EstateElite, I would like to request an instant video consultation or walkthrough for: ${window.location.href}`
+                        `Hello AbroadAccommodation, I would like to request an instant video consultation or walkthrough for: ${window.location.href}`
                       )}`}
                       target="_blank"
                       rel="noreferrer"

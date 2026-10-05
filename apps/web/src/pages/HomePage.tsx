@@ -304,7 +304,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <span className="text-xs font-bold uppercase tracking-widest text-[#004274] block mb-2">
-              Why EstateElite
+              Why AbroadAccommodation
             </span>
             <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
               A Higher Standard of Real Estate Service
@@ -349,7 +349,7 @@ export function HomePage() {
       <section className="bg-[#004274] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold tracking-tight mb-4">
-            Instruct EstateElite To Represent Your Property
+            Instruct AbroadAccommodation To Represent Your Property
           </h2>
           <p className="max-w-xl mx-auto text-slate-200 text-sm mb-8">
             Access our qualified pool of high-net-worth buyers, corporate tenants, and institutional funds across Europe and the Middle East.

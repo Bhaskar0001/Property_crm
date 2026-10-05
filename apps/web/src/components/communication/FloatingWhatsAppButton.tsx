@@ -14,10 +14,10 @@ export const FloatingWhatsAppButton: React.FC = () => {
 
   const handleOpenWhatsApp = () => {
     // Generate context-aware text
-    let message = 'Hello EstateElite, I am browsing your portfolio and would like to speak with a luxury property advisor.';
+    let message = 'Hello AbroadAccommodation, I am browsing your portfolio and would like to speak with a luxury property advisor.';
     if (isPropertyPage) {
       const pageUrl = window.location.href;
-      message = `Hello EstateElite, I am currently reviewing this listing and would like more details or to schedule a viewing: ${pageUrl}`;
+      message = `Hello AbroadAccommodation, I am currently reviewing this listing and would like more details or to schedule a viewing: ${pageUrl}`;
     }
 
     // Background track inquiry
@@ -49,7 +49,7 @@ export const FloatingWhatsAppButton: React.FC = () => {
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white ring-1 ring-emerald-400/20" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-gray-900">EstateElite Concierge</h4>
+                <h4 className="text-xs font-bold text-gray-900">AbroadAccommodation Concierge</h4>
                 <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Typically replies in 2 min

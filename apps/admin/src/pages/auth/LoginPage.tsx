@@ -41,12 +41,17 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-10 shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Property OS
+        <div className="flex flex-col items-center">
+          <img
+            src="/logo.png"
+            alt="AbroadAccommodation"
+            className="w-16 h-16 object-contain mb-3 drop-shadow-sm"
+          />
+          <h2 className="text-center text-3xl font-extrabold tracking-tight text-gray-900">
+            Abroad<span className="text-[#004274]">Accommodation</span>
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account
+          <p className="mt-1 text-center text-xs font-semibold uppercase tracking-wider text-amber-600">
+            Admin CRM Control Panel
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

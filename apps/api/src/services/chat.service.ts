@@ -105,7 +105,7 @@ export class ChatService {
     const cleanMessage = (userMessage || '').trim();
     if (!cleanMessage) {
       return {
-        reply: "Hello! Welcome to EstateElite. How may I assist your property search, viewing, or acquisition plans today?",
+        reply: "Hello! Welcome to AbroadAccommodation. How may I assist your property search, viewing, or acquisition plans today?",
         matchedProperties: [],
       };
     }
@@ -257,7 +257,7 @@ export class ChatService {
       return `${idx + 1}. "${p.title}" | Price: ${priceStr} | City: ${p.city || ''} | Area: ${p.area || ''} | Country: ${p.country?.name || ''} | Beds: ${p.bedrooms || 'N/A'}, Baths: ${p.bathrooms || 'N/A'} | Type: ${p.propertyType?.name || 'Property'} | Slug: /properties/${p.slug} | Desc: ${p.shortDescription || ''}`;
     }).join('\n');
 
-    const systemPrompt = `You are the Senior Property Advisor and Private Client Director for EstateElite, an ultra-luxury international real estate practice.
+    const systemPrompt = `You are the Senior Property Advisor and Private Client Director for AbroadAccommodation, an ultra-luxury international real estate practice.
 Your tone is sophisticated, welcoming, discreet, authoritative, and grounded in concrete property facts.
 You have direct, real-time access to our verified published portfolio:
 
@@ -268,7 +268,7 @@ STRICT ADVISORY RULES:
 1. Ground every answer strictly in the inventory provided above. Never invent, hallucinate, or approximate fake properties or nonexistent prices.
 2. When answering inquiries about locations, budgets, penthouses, villas, or apartments, quote real property titles, verified prices (including currency symbol), and locations from the active inventory.
 3. For viewings, walkthroughs, or scheduling, explain our private on-site inspection services, WhatsApp live video tours, and direct callback desk.
-4. STRICT PERSONA: NEVER describe yourself as an "AI", "language model", "algorithm", or "bot". Speak with the voice of a seasoned luxury property director. If asked if you are AI, answer: "I am your EstateElite private client advisor, dedicated to managing your acquisitions across our global portfolio."
+4. STRICT PERSONA: NEVER describe yourself as an "AI", "language model", "algorithm", or "bot". Speak with the voice of a seasoned luxury property director. If asked if you are AI, answer: "I am your AbroadAccommodation private client advisor, dedicated to managing your acquisitions across our global portfolio."
 5. Format your answers clearly with concise bullet points and bold highlights for property names and prices.`;
 
     const contents: any[] = [];
@@ -356,7 +356,7 @@ Here are the immediate ways we can arrange this:
       lower.includes('market value') ||
       lower.includes('worth')
     ) {
-      return `EstateElite Private Advisory provides confidential, market-grounded property valuations across residential and commercial prime assets.
+      return `AbroadAccommodation Private Advisory provides confidential, market-grounded property valuations across residential and commercial prime assets.
 
 Our valuation directors conduct comprehensive comparative market analyses evaluating recent registered prime transactions, current yield rates, and international buyer interest.
 
@@ -366,7 +366,7 @@ Our valuation directors conduct comprehensive comparative market analyses evalua
 
     // Zero properties state
     if (allProperties.length === 0) {
-      return `Welcome to EstateElite. I am your private client concierge and advisor.
+      return `Welcome to AbroadAccommodation. I am your private client concierge and advisor.
 
 Our portfolio is currently being updated with new prime acquisitions. You can submit your acquisition requirements or schedule a confidential advisory call with our team.
 
@@ -384,7 +384,7 @@ How may I assist you with your property search or valuation today?`;
       const list = (penthousesAndVillas.length > 0 ? penthousesAndVillas : matches).slice(0, 4);
 
       if (list.length > 0) {
-        return `EstateElite represents signature residences and villas across our active portfolio:
+        return `AbroadAccommodation represents signature residences and villas across our active portfolio:
 
 ${list.map(fmt).join('\n\n')}
 
@@ -403,7 +403,7 @@ You can select any listing to view detailed floor plans, photo galleries, or coo
 
     // 5. Default response with top current listings
     const flagships = allProperties.slice(0, 4);
-    return `Welcome to EstateElite. I am your personal real estate concierge and advisor.
+    return `Welcome to AbroadAccommodation. I am your personal real estate concierge and advisor.
 
 Here is a selection of current opportunities from our portfolio:
 

@@ -116,7 +116,7 @@ export const PropertyAIChatbot: React.FC = () => {
     {
       id: 'welcome-1',
       role: 'advisor',
-      text: "Welcome to EstateElite Private Advisory. How may we assist your international acquisitions, private viewings, or portfolio search today?",
+      text: "Welcome to AbroadAccommodation Private Advisory. How may we assist your international acquisitions, private viewings, or portfolio search today?",
       timestamp: 'Today',
       showActions: true,
     },
@@ -229,7 +229,7 @@ export const PropertyAIChatbot: React.FC = () => {
 
   const handleOpenWhatsApp = (customText?: string) => {
     const phone = contact?.whatsappClean || '353891234567';
-    const text = customText || 'Hello EstateElite, I would like to speak with a senior property advisor.';
+    const text = customText || 'Hello AbroadAccommodation, I would like to speak with a senior property advisor.';
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
   };
 
@@ -295,7 +295,7 @@ export const PropertyAIChatbot: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold tracking-tight text-white">EstateElite Private Advisory</h3>
+                  <h3 className="text-sm font-bold tracking-tight text-white">AbroadAccommodation Private Advisory</h3>
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px] text-slate-300 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -424,7 +424,7 @@ export const PropertyAIChatbot: React.FC = () => {
                 {msg.role === 'advisor' && (
                   <div className="flex items-center gap-1.5 mb-1.5 pl-1 text-[11px] font-bold text-slate-700">
                     <LuxuryEmblem size="xs" variant="gold" />
-                    <span>EstateElite Senior Advisory Desk</span>
+                    <span>AbroadAccommodation Senior Advisory Desk</span>
                   </div>
                 )}
 

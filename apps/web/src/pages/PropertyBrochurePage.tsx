@@ -135,7 +135,7 @@ export function PropertyBrochurePage() {
         <header className="flex items-start justify-between border-b-2 border-[#004274] pb-6">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-2xl font-black tracking-tight text-[#004274]">{contact?.companyName?.toUpperCase() || 'ESTATEELITE'}</span>
+              <span className="text-2xl font-black tracking-tight text-[#004274]">{contact?.companyName?.toUpperCase() || 'AbroadAccommodation'}</span>
               <span className="text-xs font-semibold px-2 py-0.5 bg-[#004274]/10 text-[#004274] rounded">ESTATE ADVISORY</span>
             </div>
             <p className="text-xs text-slate-500 mt-1">Prime International Real Estate & Property Advisory</p>
@@ -143,7 +143,7 @@ export function PropertyBrochurePage() {
           <div className="text-right text-xs text-slate-500 space-y-0.5">
             <p className="font-semibold text-slate-800">Reference: {property.internalReference || property.slug.substring(0, 10).toUpperCase()}</p>
             <p>Generated: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-            <p className="text-[#004274] font-medium">estateelite.com</p>
+            <p className="text-[#004274] font-medium">AbroadAccommodation.com</p>
           </div>
         </header>
 
@@ -355,7 +355,7 @@ export function PropertyBrochurePage() {
         {/* Agent / Agency Contact Footer Card */}
         <footer className="page-break-inside-avoid mt-8 pt-6 border-t-2 border-slate-200 bg-slate-50 -mx-8 -mb-8 sm:-mx-12 sm:-mb-12 p-8 sm:p-10 rounded-b-xl flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="space-y-2 text-center sm:text-left">
-            <div className="text-sm font-bold text-slate-900">{contact?.companyName?.toUpperCase() || 'ESTATEELITE'} — PRIME REAL ESTATE</div>
+            <div className="text-sm font-bold text-slate-900">{contact?.companyName?.toUpperCase() || 'AbroadAccommodation'} — PRIME REAL ESTATE</div>
             <p className="text-xs text-slate-600 max-w-md">
               To arrange an in-person viewing, request floorplans, or inquire regarding legal conveyance, contact our advisory desk directly.
             </p>
@@ -374,7 +374,7 @@ export function PropertyBrochurePage() {
               )}
               <span className="flex items-center">
                 <Globe className="w-3.5 h-3.5 text-[#004274] mr-1.5" />
-                estateelite.com
+                AbroadAccommodation.com
               </span>
             </div>
           </div>

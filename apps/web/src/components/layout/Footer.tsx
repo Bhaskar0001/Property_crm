@@ -12,15 +12,17 @@ export function Footer() {
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-11 h-11 rounded-xl bg-slate-950 border border-amber-500/30 flex items-center justify-center shadow-lg">
-                <LuxuryEmblem size="sm" variant="gold" />
-              </div>
+              <img
+                src="/logo.png"
+                alt="AbroadAccommodation"
+                className="w-11 h-11 object-contain rounded-xl bg-white p-1 shadow-md"
+              />
               <div className="flex flex-col">
-                <span className="text-xl font-extrabold tracking-tight text-white uppercase">
-                  Estate<span className="text-amber-400">Elite</span>
+                <span className="text-xl font-extrabold tracking-tight text-white">
+                  Abroad<span className="text-amber-400">Accommodation</span>
                 </span>
                 <span className="text-[10px] uppercase tracking-widest text-slate-400 font-medium -mt-0.5">
-                  International Realty
+                  International Living & Real Estate
                 </span>
               </div>
             </div>
@@ -131,7 +133,7 @@ export function Footer() {
 
         {/* Bottom copyright */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} {contact?.companyName || 'EstateElite'}. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {contact?.companyName || 'AbroadAccommodation'}. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-slate-400">
               Privacy Policy

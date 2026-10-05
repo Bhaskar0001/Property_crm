@@ -359,7 +359,7 @@ export const ChatBookingModal: React.FC<ChatBookingModalProps> = ({
               )}
             </button>
             <p className="text-[10px] text-center text-slate-400 mt-2">
-              All inquiries are strictly confidential and immediately assigned to a licensed EstateElite senior partner.
+              All inquiries are strictly confidential and immediately assigned to a licensed AbroadAccommodation senior partner.
             </p>
           </div>
         </form>

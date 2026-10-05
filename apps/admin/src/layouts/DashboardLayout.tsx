@@ -65,16 +65,18 @@ export function DashboardLayout() {
       {/* Sidebar */}
       <aside className={`bg-dark text-gray-300 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} flex flex-col`}>
         <div className="flex h-16 items-center border-b border-gray-800 px-4 gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-slate-900 border border-amber-500/30 flex items-center justify-center shadow-md shrink-0">
-            <LuxuryEmblem size="xs" variant="gold" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="AbroadAccommodation"
+            className="w-9 h-9 object-contain rounded-xl bg-white p-1 shrink-0 shadow-md"
+          />
           {sidebarOpen && (
             <div className="flex flex-col truncate">
-              <span className="font-extrabold text-sm text-white tracking-wide uppercase">
-                Estate<span className="text-amber-400">Elite</span>
+              <span className="font-extrabold text-sm text-white tracking-wide">
+                Abroad<span className="text-amber-400">Accommodation</span>
               </span>
               <span className="text-[9px] uppercase tracking-widest text-slate-400 font-semibold -mt-0.5">
-                Executive Desk
+                Admin Control Panel
               </span>
             </div>
           )}

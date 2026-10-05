@@ -15,7 +15,7 @@ export class EmailService {
 
   async sendOtp(email: string, otp: string, name?: string): Promise<boolean> {
     const greeting = name ? `Hello ${name},` : 'Hello,';
-    const subject = `Your Verification Code: ${otp} — EstateElite`;
+    const subject = `Your Verification Code: ${otp} — AbroadAccommodation`;
     const html = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
         <div style="margin-bottom: 24px;">
@@ -29,7 +29,7 @@ export class EmailService {
         </div>
         <p style="color: #64748b; font-size: 13px; line-height: 1.5;">This code will expire in 10 minutes. If you did not request this login code, you can safely disregard this email.</p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
-        <p style="color: #94a3b8; font-size: 11px; text-align: center;">EstateElite Advisory Group • Dublin • London • Dubai<br/>Licensed Real Estate Practice</p>
+        <p style="color: #94a3b8; font-size: 11px; text-align: center;">AbroadAccommodation Advisory Group • Dublin • London • Dubai<br/>Licensed Real Estate Practice</p>
       </div>
     `;
 
@@ -80,7 +80,7 @@ export class EmailService {
       notes?: string;
     }
   ): Promise<boolean> {
-    const subject = `Viewing Request: ${details.propertyTitle} — EstateElite`;
+    const subject = `Viewing Request: ${details.propertyTitle} — AbroadAccommodation`;
     const html = `
       <div style="font-family: Arial, sans-serif; padding: 24px; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
         <h3 style="color: #004274;">Viewing Request Received</h3>

@@ -182,7 +182,7 @@ export function ContactPage() {
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
                 >
                   <option value="Buying">Acquiring / Buying Property</option>
-                  <option value="Selling">Instructing EstateElite to Sell</option>
+                  <option value="Selling">Instructing AbroadAccommodation to Sell</option>
                   <option value="Renting">Luxury Letting / Tenancy</option>
                   <option value="Institutional">Commercial & Institutional Investment</option>
                   <option value="Valuation">Valuation & Probate Services</option>
