@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: property-crm-api
+    runtime: node
+    plan: starter
+    region: singapore
+    buildCommand: npm install && npm run build:api
+    startCommand: npm run start:api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: JWT_EXPIRY
+        value: 15m
+      - key: JWT_REFRESH_EXPIRY
+        value: 7d
+      - key: INITIAL_ADMIN_EMAIL
+        sync: false
+      - key: INITIAL_ADMIN_PASSWORD
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: crm
+      - key: R2_PUBLIC_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        value: support@abroadaccommodation.com
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PUBLIC_WEBSITE_URL
+        value: https://listing.abroadaccommodation.com
+      - key: ADMIN_URL
+        sync: false
+      - key: AGENCY_NAME
+        value: Listing.abroadaccommodation.com
+      - key: AGENCY_PHONE
+        value: "+919991090919"
+      - key: AGENCY_WHATSAPP
+        value: "+919991090919"
+      - key: AGENCY_EMAIL
+        value: support@abroadaccommodation.com
+      - key: AGENCY_ADDRESS
+        value: "C block, Uttam Nagar, New Delhi, Delhi 110059, India"
+      - key: AGENCY_OFFICE_HOURS
+        value: "Mon - Sat: 9:00 AM - 9:00 PM GMT"
+      - key: AGENCY_VIDEO_URL
+        value: "https://meet.google.com/new"

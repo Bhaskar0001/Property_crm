@@ -14,6 +14,7 @@
     "build:api": "npm run build --workspace=apps/api",
     "build:web": "npm run build --workspace=apps/web",
     "build:admin": "npm run build --workspace=apps/admin",
+    "start:api": "node apps/api/dist/app.js",
     "seed": "npm run seed:all --workspace=apps/api",
     "reset:admin": "npm run reset:admin --workspace=apps/api",
     "lint": "npm run lint --workspaces --if-present",

@@ -42,7 +42,21 @@ const app = express();
 // Security
 app.use(helmet());
 app.use(cors({
-  origin: config.cors.origins,
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const configuredOrigins = config.cors.origins;
+    const isExplicitlyAllowed = configuredOrigins.some(o => o && origin.toLowerCase() === o.toLowerCase());
+    const isDomainAllowed = 
+      origin.includes('abroadaccommodation.com') ||
+      origin.endsWith('.vercel.app') ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1');
+
+    if (isExplicitlyAllowed || isDomainAllowed || config.env !== 'production') {
+      return callback(null, true);
+    }
+    return callback(new Error(`Origin ${origin} not allowed by CORS`));
+  },
   credentials: true,
 }));
 app.use(mongoSanitize());
