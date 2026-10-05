@@ -79,8 +79,10 @@ export function CustomerPortalPage() {
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
-  const viewings = enquiries?.viewings || [];
-  const leads = enquiries?.leads || [];
+  const safeFavorites = Array.isArray(favorites) ? favorites : [];
+  const safeOffers = Array.isArray(offers) ? offers : [];
+  const viewings = Array.isArray(enquiries?.viewings) ? enquiries.viewings : [];
+  const leads = Array.isArray(enquiries?.leads) ? enquiries.leads : [];
 
   return (
     <div className="bg-[#fcfdfd] min-h-screen py-10">
@@ -119,7 +121,7 @@ export function CustomerPortalPage() {
             }`}
           >
             <Heart className="w-4 h-4" />
-            <span>Saved Properties ({favorites.length})</span>
+            <span>Saved Properties ({safeFavorites.length})</span>
           </button>
 
           <button
@@ -143,7 +145,7 @@ export function CustomerPortalPage() {
             }`}
           >
             <Tag className="w-4 h-4" />
-            <span>My Offers & Deals ({offers.length})</span>
+            <span>My Offers & Deals ({safeOffers.length})</span>
           </button>
 
           <button
@@ -168,9 +170,9 @@ export function CustomerPortalPage() {
                   <div key={i} className="h-80 bg-slate-200 rounded-xl animate-pulse" />
                 ))}
               </div>
-            ) : favorites.length > 0 ? (
+            ) : safeFavorites.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {favorites.map((prop) => (
+                {safeFavorites.map((prop) => (
                   <PropertyCard key={prop._id} property={prop} />
                 ))}
               </div>
@@ -292,7 +294,7 @@ export function CustomerPortalPage() {
                   <span>Your Submitted Purchase Offers & Negotiations</span>
                 </h2>
                 <span className="text-xs text-slate-500 font-medium">
-                  {offers.length} {offers.length === 1 ? 'active offer' : 'active offers'}
+                  {safeOffers.length} {safeOffers.length === 1 ? 'active offer' : 'active offers'}
                 </span>
               </div>
 
@@ -302,7 +304,7 @@ export function CustomerPortalPage() {
                     <div key={i} className="h-24 bg-slate-100 rounded-xl animate-pulse" />
                   ))}
                 </div>
-              ) : offers.length > 0 ? (
+              ) : safeOffers.length > 0 ? (
                 <div className="divide-y divide-slate-100">
                   {offers.map((offer: any) => {
                     const status = (offer.status || 'SUBMITTED').toUpperCase();

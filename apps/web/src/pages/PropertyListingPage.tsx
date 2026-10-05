@@ -248,8 +248,8 @@ export function PropertyListingPage() {
               }}
               className="px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100/70 focus:outline-none focus:ring-2 focus:ring-[#004274] transition cursor-pointer font-medium"
             >
-              <option value="">All Countries ({countries.length})</option>
-              {countries.map((c) => {
+              <option value="">All Countries ({(countries || []).length})</option>
+              {(countries || []).map((c) => {
                 const matched = WORLD_COUNTRIES.find(
                   (wc) => wc.isoCode.toUpperCase() === (c.isoCode || '').toUpperCase() || wc.name.toLowerCase() === c.name.toLowerCase()
                 );
@@ -271,8 +271,8 @@ export function PropertyListingPage() {
               }}
               className="px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100/70 focus:outline-none focus:ring-2 focus:ring-[#004274] transition cursor-pointer font-medium"
             >
-              <option value="">Property Type ({propertyTypes.length})</option>
-              {propertyTypes.map((t) => (
+              <option value="">Property Type ({(propertyTypes || []).length})</option>
+              {(propertyTypes || []).map((t) => (
                 <option key={t._id} value={t.slug || t._id}>
                   {t.name} {t.propertyCount > 0 ? `(${t.propertyCount})` : ''}
                 </option>
