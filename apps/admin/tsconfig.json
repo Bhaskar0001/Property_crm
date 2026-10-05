@@ -8,7 +8,9 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@repo/shared": ["../../packages/shared/src/index.ts", "../../packages/shared/src"],
+      "@repo/shared/*": ["../../packages/shared/src/*"]
     },
 
     /* Bundler mode */
