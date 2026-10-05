@@ -1,4 +1,4 @@
-name: CI/CD Pipeline — Build & Deploy to Hostinger VPS
+name: CI Pipeline — Build & Typecheck
 
 on:
   push:
@@ -31,19 +31,3 @@ jobs:
 
       - name: Build Public Web Frontend
         run: npm run build --workspace=@repo/web
-
-  deploy:
-    name: Deploy to Hostinger VPS
-    needs: test-and-build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    steps:
-      - name: Trigger remote deployment via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            bash /var/www/realestate/scripts/deploy-vps.sh
