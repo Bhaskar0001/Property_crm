@@ -102,7 +102,7 @@ export class PropertyService {
 
   async getById(id: string, user?: any) {
     const property: any = await PropertyModel.findById(id)
-      .populate('country propertyType listingType tenure status currency features coverImage createdBy updatedBy');
+      .populate('country propertyType listingType tenureType status currency features createdBy updatedBy');
       
     if (!property) {
       throw new Error('NotFoundError: Property not found');

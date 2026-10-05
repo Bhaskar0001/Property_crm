@@ -49,10 +49,10 @@ export function SinglePropertyMap({
         scrollWheelZoom: false, // Don't hijack page scroll
       });
 
-      // CartoDB Positron high-resolution basemap
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      // OpenStreetMap high-resolution basemap
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: 'abcd',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
 
       // Attribution
