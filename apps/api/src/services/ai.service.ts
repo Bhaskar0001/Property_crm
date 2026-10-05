@@ -11,7 +11,7 @@ export class AIService {
 
   constructor() {
     this.apiKey = config.gemini.apiKey;
-    this.endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`;
+    this.endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${this.apiKey}`;
   }
 
   private isConfigured(): boolean {

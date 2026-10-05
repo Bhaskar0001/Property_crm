@@ -47,7 +47,10 @@ class StorageService {
           // R2 doesn't fully support ACL in the same way S3 does if it's public bucket, but we can try to set it or rely on bucket policy
         });
         await this.client.send(command);
-        return `${config.r2.publicUrl}/${key}`;
+        const publicBase = config.r2.publicUrl
+          ? config.r2.publicUrl.replace(/\/+$/, '')
+          : `https://${config.r2.accountId}.r2.cloudflarestorage.com/${config.r2.bucketName}`;
+        return `${publicBase}/${key}`;
       } catch (error) {
         console.error('Error uploading to R2:', error);
         throw new Error('Failed to upload file to storage');
