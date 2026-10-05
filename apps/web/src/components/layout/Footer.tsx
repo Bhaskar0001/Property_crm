@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
+import { Phone, Mail, MapPin } from 'lucide-react';
 import { useContactInfo } from '../../hooks/usePublicData';
 
 export function Footer() {
@@ -29,10 +29,6 @@ export function Footer() {
               Premier real estate advisory specializing in prime residential sales, luxury lettings,
               and institutional property investments across Ireland, the United Kingdom, and the UAE.
             </p>
-            <div className="flex items-center space-x-2 text-xs text-slate-400 pt-2">
-              <ShieldCheck className="w-4 h-4 text-[#6fabca]" />
-              <span>Licensed Real Estate Practice • PSRA Licence No. 004128</span>
-            </div>
           </div>
 
           {/* Quick Links */}

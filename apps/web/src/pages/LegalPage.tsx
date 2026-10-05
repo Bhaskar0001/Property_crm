@@ -121,34 +121,34 @@ export function LegalPage() {
           {activeTab === 'regulatory' && (
             <>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-[#004274] mb-2">Regulatory Information & Licences</h1>
-                <p className="text-xs text-slate-400">Regulatory Body: Property Services Regulatory Authority (PSRA)</p>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-[#004274] mb-2">Professional Standards & Compliance</h1>
+                <p className="text-xs text-slate-400">International Real Estate Operations & Standards</p>
               </div>
 
               <div className="space-y-4">
                 <div className="bg-blue-50/60 border border-blue-200 rounded-lg p-4">
-                  <h3 className="font-bold text-[#004274] mb-1">Licensed Property Services Provider</h3>
+                  <h3 className="font-bold text-[#004274] mb-1">Professional Property Services Provider</h3>
                   <p className="text-xs text-slate-700">
-                    AbroadAccommodation Real Estate Ltd operates as an authorized and fully licensed estate agency under the Property Services (Regulation) Act 2011.
+                    AbroadAccommodation operates according to international real estate best practices, anti-money laundering (AML) directives, and consumer protection regulations.
                   </p>
                 </div>
 
-                <h2 className="text-base font-bold text-slate-900">Licence Categories Held</h2>
+                <h2 className="text-base font-bold text-slate-900">Core Advisory Operations</h2>
                 <ul className="list-disc pl-5 space-y-1 text-slate-600">
-                  <li><strong>Licence Category A:</strong> Auction of property other than land</li>
-                  <li><strong>Licence Category B:</strong> Purchase or sale by private treaty of land and residential property</li>
-                  <li><strong>Licence Category C:</strong> Letting of land and residential tenancy creation</li>
-                  <li><strong>Licence Category D:</strong> Property management services for multi-unit developments</li>
+                  <li><strong>Acquisitions & Sales:</strong> Facilitation of private treaty residential and commercial real estate transactions</li>
+                  <li><strong>Prime Lettings:</strong> Tenancy curation, student accommodations, and executive relocations</li>
+                  <li><strong>Property Management:</strong> Asset maintenance coordination and tenant management services</li>
+                  <li><strong>Investment Advisory:</strong> Cross-border portfolio allocation and yield advisory</li>
                 </ul>
 
-                <h2 className="text-base font-bold text-slate-900">Professional Indemnity & Client Escrow</h2>
+                <h2 className="text-base font-bold text-slate-900">Professional Indemnity & Client Protection</h2>
                 <p>
-                  AbroadAccommodation maintains comprehensive Professional Indemnity Insurance in accordance with statutory minimum requirements. All client reservation deposits and tenant funds are held in strictly audited, segregated Client Accounts at regulated Tier-1 banking institutions.
+                  AbroadAccommodation maintains professional standards and operational insurance in accordance with statutory requirements across regions of operation. All client reservation deposits and funds are handled through secure, audited financial accounts at regulated banking institutions.
                 </p>
 
-                <h2 className="text-base font-bold text-slate-900">Dispute Resolution & Redress</h2>
+                <h2 className="text-base font-bold text-slate-900">Dispute Resolution & Client Care</h2>
                 <p>
-                  We operate a formal internal complaints escalation procedure. In the unlikely event that a resolution cannot be reached internally, clients may refer complaints directly to the Property Services Regulatory Authority (PSRA), Abbey Court, Irish Life Centre, Lower Abbey Street, Dublin 1.
+                  We operate a dedicated internal client care and dispute resolution procedure. Inquiries and feedback can be lodged directly with our senior management desk at legal@abroadaccommodation.com.
                 </p>
               </div>
             </>

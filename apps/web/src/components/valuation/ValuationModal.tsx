@@ -142,7 +142,7 @@ export const ValuationModal: React.FC = () => {
             <div>
               <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-[#004274] text-[10px] font-bold uppercase tracking-wider mb-2">
                 <Sparkles className="w-3 h-3 text-amber-500" />
-                <span>RICS & PSRA Standard Appraisal</span>
+                <span>Certified Market Appraisal</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
                 Request Confidential Property Valuation

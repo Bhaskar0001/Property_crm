@@ -54,7 +54,7 @@ export function ServicesPage() {
       title: 'Valuation & Advisory Services',
       description: 'Red Book compliant market appraisals, probate valuations, capital gains tax advisory, and expert witness documentation for legal entities and financial institutions.',
       features: [
-        'RICS & PSRA certified valuation reports',
+        'Certified market appraisal & valuation reports',
         'Secured lending appraisals for Tier-1 banks',
         'Portfolio annual market value indexation',
         'Tax efficiency & succession structuring guidance',
