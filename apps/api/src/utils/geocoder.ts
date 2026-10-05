@@ -132,3 +132,43 @@ export function resolveCoordinates(
 
   return { latitude: lat, longitude: lng };
 }
+
+/**
+ * Asynchronously geocode an address using OpenStreetMap Nominatim (100% Free, no API key or billing needed).
+ * Falls back cleanly to instant coordinates if offline or not found.
+ */
+export async function geocodeWithOpenStreetMap(
+  address?: string,
+  city?: string,
+  country?: string
+): Promise<{ latitude: number; longitude: number }> {
+  const queryParts = [address, city, country].filter(Boolean);
+  const query = queryParts.join(', ').trim();
+
+  if (query) {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': 'AbroadAccommodationCRM/1.0 (contact: support@abroadaccommodation.com)',
+        },
+        signal: AbortSignal.timeout(3500),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as Array<{ lat: string; lon: string }>;
+        if (data && data.length > 0 && data[0].lat && data[0].lon) {
+          return {
+            latitude: Number(parseFloat(data[0].lat).toFixed(6)),
+            longitude: Number(parseFloat(data[0].lon).toFixed(6)),
+          };
+        }
+      }
+    } catch {
+      // Fall through to deterministic fallback
+    }
+  }
+
+  return resolveCoordinates(city, country, address, true);
+}
+
