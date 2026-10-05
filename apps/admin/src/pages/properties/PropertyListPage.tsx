@@ -26,6 +26,12 @@ export function PropertyListPage() {
 
   const effectiveCountry = selectedCountryId !== 'all' ? selectedCountryId : (country || undefined);
 
+  const publicWebUrl =
+    (import.meta as any).env?.VITE_PUBLIC_URL ||
+    (typeof window !== 'undefined' && window.location.hostname.includes('abroadaccommodation.com')
+      ? 'https://listing.abroadaccommodation.com'
+      : 'http://localhost:3000');
+
   const { data: propertiesResponse, isLoading } = useProperties({
     page,
     limit: 10,
@@ -350,7 +356,7 @@ export function PropertyListPage() {
                           <FileText className="h-4 w-4" />
                         </Link>
                         <a
-                          href={`http://localhost:3000/properties/${p.slug}`}
+                          href={`${publicWebUrl}/properties/${p.slug}`}
                           target="_blank"
                           rel="noreferrer"
                           title="View on Website"

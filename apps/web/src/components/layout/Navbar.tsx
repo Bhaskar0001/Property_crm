@@ -127,15 +127,24 @@ export function Navbar() {
             </div>
             <span className="text-slate-300 font-medium hidden md:inline">Premier International Real Estate</span>
             <span className="text-white/20 hidden md:inline">|</span>
-            <a
-              href="http://localhost:3001"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center space-x-1 text-[#6fabca] hover:text-white transition-colors font-medium"
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Admin Desk</span>
-            </a>
+            {(() => {
+              const adminUrl =
+                (import.meta as any).env?.VITE_ADMIN_URL ||
+                (typeof window !== 'undefined' && window.location.hostname.includes('abroadaccommodation.com')
+                  ? 'https://admin.listing.abroadaccommodation.com'
+                  : 'http://localhost:3001');
+              return (
+                <a
+                  href={adminUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center space-x-1 text-[#6fabca] hover:text-white transition-colors font-medium"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Admin Desk</span>
+                </a>
+              );
+            })()}
           </div>
         </div>
       </div>

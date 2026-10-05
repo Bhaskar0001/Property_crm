@@ -50,6 +50,12 @@ export function LeadDetailPage() {
   });
   const [showTaskForm, setShowTaskForm] = useState(false);
 
+  const publicWebUrl =
+    (import.meta as any).env?.VITE_PUBLIC_URL ||
+    (typeof window !== 'undefined' && window.location.hostname.includes('abroadaccommodation.com')
+      ? 'https://listing.abroadaccommodation.com'
+      : 'http://localhost:3000');
+
   if (isLoading) {
     return (
       <div className="h-64 flex items-center justify-center bg-white rounded-xl border border-gray-200">
@@ -356,7 +362,7 @@ export function LeadDetailPage() {
                       </span>
                       <a
                         href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-                          `Hello, we have matched a property to your requirements: ${prop.title} - http://localhost:3000/properties/${prop.slug}`
+                          `Hello, we have matched a property to your requirements: ${prop.title} - ${publicWebUrl}/properties/${prop.slug}`
                         )}`}
                         target="_blank"
                         rel="noreferrer"
